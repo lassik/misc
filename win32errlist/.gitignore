@@ -1,0 +1,4 @@
+/win32errlist.txt
+/win32errliststructs.h
+*.exe
+*.obj
