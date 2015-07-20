@@ -17,5 +17,8 @@ indent_size = 2
 [*.lua]
 indent_size = 2
 
+[*.py]
+indent_size = 4
+
 [*.sh]
 indent_size = 4
