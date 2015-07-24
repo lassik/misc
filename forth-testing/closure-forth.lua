@@ -52,6 +52,12 @@ function iter(tbl)
   end
 end
 
+function printvars()
+  for key, val in pairs(variables) do
+    print(key.." = "..tostring(val))
+  end
+end
+
 function printstack()
   print(unpack(stack))
 end
@@ -65,6 +71,7 @@ function pop()
   return table.remove(stack)
 end
 
+defexecuted(".vs", printvars)  -- TODO: Find a better name for this.
 defexecuted(".s", printstack)
 defexecuted("drop", pop)
 defbinaryop("2dup", function(a, b) push(a); push(b); push(a); return b end)
@@ -145,6 +152,20 @@ defcompiled(
   end
 )
 
+defcompiled(
+  "variable",
+  function(worditer)
+    local name = worditer()
+    assert(name)
+    local key = name
+    -- TODO: Append a running number to make the key unique if a prior
+    -- variable with the same name already existed.
+    dictionary[name] = function() push(variables[key]) end
+    dictionary[name.."!"] = function() variables[key] = pop() end
+    return nil
+  end
+)
+
 defsentinel("then")
 defsentinel("else")
 defsentinel(";")
@@ -162,11 +183,15 @@ end
 
 function demo(anum, bnum)
   local program = {
+    "variable", "a", anum, "a!",
+    "variable", "b", bnum, "b!",
+    ".vs",
     ":", "test", "2dup", "<", ";",
     ":", "operate", "test", "if", "+", "else", "-", "then", ";",
-    anum, bnum, "operate", ".s", "drop"
+    "a", "b", "operate", ".s", "drop"
   }
   execute(compilelist(program))
+  print()
 end
 
 demo(5, 2)
