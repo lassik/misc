@@ -87,6 +87,7 @@ function compile(word, worditer)
 end
 
 function execute(xt)
+  if xt == nil then return end
   assert(type(xt) == "function")
   -- TODO: If we stored the name/description of xt somewhere, we could
   -- implement a trace feature that printed here the name/description
@@ -126,8 +127,27 @@ defcompiled(
   end
 )
 
+defcompiled(
+  ":",
+  function(worditer)
+    local name = worditer()
+    assert(name)
+    local body = {}
+    for word in worditer do
+      if issentinel(word, ";") then
+        break
+      else
+        table.insert(body, compile(word, worditer))
+      end
+    end
+    dictionary[name] = function() execlist(body) end
+    return nil
+  end
+)
+
 defsentinel("then")
 defsentinel("else")
+defsentinel(";")
 
 function compilelist(words)
   local compiled = {}
@@ -142,7 +162,9 @@ end
 
 function demo(anum, bnum)
   local program = {
-    anum, bnum, "2dup", "<", "if", "+", "else", "-", "then", ".s", "drop"
+    ":", "test", "2dup", "<", ";",
+    ":", "operate", "test", "if", "+", "else", "-", "then", ";",
+    anum, bnum, "operate", ".s", "drop"
   }
   execute(compilelist(program))
 end
