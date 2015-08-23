@@ -20,5 +20,8 @@ indent_size = 2
 [*.py]
 indent_size = 4
 
+[*.rb]
+indent_size = 2
+
 [*.sh]
 indent_size = 4
