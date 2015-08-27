@@ -16,10 +16,20 @@ import logging
 import re
 import sys
 import time
-import urllib
+
+try:
+    from urllib.request import FancyURLopener
+    from urllib.parse import urlencode
+except ImportError:  # Python 2
+    from urllib import FancyURLopener, urlencode
+
+try:
+    unicode
+except NameError:
+    def unicode(s): return s
 
 
-class MozillaURLopener(urllib.FancyURLopener):
+class MozillaURLopener(FancyURLopener):
     version = 'Mozilla/5.0 (X11; Linux i686; rv:7.0.1) Gecko/20100101 Firefox/7.0.1'
 
 
@@ -65,7 +75,8 @@ def save_audio(basename, stream_url):
     filename = basename+'.mp3'
     logging.info('saving %s (audio)' % (filename,))
     logging.debug('stream URL: %s' % (stream_url,))
-    filename, headers = urllib.urlretrieve(stream_url, filename, reporthook)
+    filename, headers = \
+        MozillaURLopener().retrieve(stream_url, filename, reporthook)
     logging.debug('headers: %s' % (headers,))
 
 
@@ -90,7 +101,6 @@ def main():
         opparse.print_help()
         exit(1)
 
-    urllib._urlopener = MozillaURLopener()
     levels = (logging.WARNING, logging.INFO, logging.DEBUG)
     logging.basicConfig(
         level=levels[min(options.verbose, len(levels)-1)],
@@ -101,8 +111,8 @@ def main():
                    for prefix in ('http://soundcloud.com/', 'https://soundcloud.com/')):
             logging.warning('not recognized as a SoundCloud clip URL; skipping: '+url)
             continue
-        widget_url = 'http://soundcloud.com/widget.json?'+urllib.urlencode({'url': url})
-        widget = json.loads(urllib.urlopen(widget_url).read())
+        widget_url = 'http://soundcloud.com/widget.json?'+urlencode({'url': url})
+        widget = json.loads(MozillaURLopener().open(widget_url).read().decode("UTF-8"))
         logging.debug(repr(widget))
         if options.no_username:
             title = '%s (SoundCloud)' % (widget['title'],)
