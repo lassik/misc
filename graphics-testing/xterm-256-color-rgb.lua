@@ -52,4 +52,22 @@ function output_background_palette()
   reset(); print()
 end
 
-output_background_palette()
+function output_palette_definition()
+  function output(r, g, b)
+    local xterm = xterm_from_rgb6(256*256*r + 256*g + b)
+    print(string.format("%03d #%02x%02x%02x", xterm, r, g, b))
+  end
+  for r = 55,255,40 do
+    for g = 55,255,40 do
+      for b = 55,255,40 do
+        output(r,g,b)
+      end
+    end
+  end
+  for i = 8,255,10 do
+    output(i,i,i)
+  end
+end
+
+--output_background_palette()
+output_palette_definition()
