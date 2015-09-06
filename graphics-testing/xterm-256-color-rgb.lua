@@ -34,19 +34,22 @@ function reset()
   io.write("\x1b[0m")
 end
 
-for r = 55,255,40 do
-  for g = 55,255,40 do
-    for b = 55,255,40 do
-      background(256*256*r + 256*g + b)
-      io.write("aa ")
+function output_background_palette()
+  for r = 55,255,40 do
+    for g = 55,255,40 do
+      for b = 55,255,40 do
+        background(256*256*r + 256*g + b)
+        io.write("aa ")
+      end
+      reset(); print()
     end
     reset(); print()
   end
+  for i = 8,255,10 do
+    background(256*256*i + 256*i + i)
+    io.write("aa ")
+  end
   reset(); print()
 end
-for i = 8,255,10 do
-  background(256*256*i + 256*i + i)
-  io.write("aa ")
-end
-print()
-reset()
+
+output_background_palette()
