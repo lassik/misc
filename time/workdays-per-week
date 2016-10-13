@@ -1,0 +1,19 @@
+#! /usr/bin/env python3
+
+import calendar
+from collections import defaultdict
+from datetime import datetime
+
+year = datetime.now().year
+nworkdays = defaultdict(set)
+for month in range(1, 12+1):
+    workdays = set()
+    firstweekday, lastday = calendar.monthrange(year, month)
+    for day in range(1, lastday+1):
+        weekday = (firstweekday + day - 1) % 7
+        if 1 <= weekday <= 5:
+            workdays.add(day)
+    nworkdays[len(workdays)].add(month)
+print(year)
+for n, months in sorted(nworkdays.items()):
+    print(n, list(sorted(months)))
