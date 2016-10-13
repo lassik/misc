@@ -1,0 +1,84 @@
+#! /usr/bin/env ruby
+require "uri"
+
+def run(*args)
+  cmd = args.map do |arg| arg.gsub(/[^A-Za-z0-9]/, "\\\\\\0") end.join(" ")
+  out = `#{cmd}`
+  raise "Error running #{cmd}" unless $?.exited? and ($?.exitstatus == 0)
+  out
+end
+
+def runcurl(*args)
+  run("curl", "--fail", "--location", "--user-agent", "any", *args)
+end
+
+def download2str(url)
+  runcurl("--silent", url)
+end
+
+def download2file(url, file)
+  runcurl("--progress-bar", "--output", file, url)
+end
+
+def filemask(str)
+  str.gsub!(/\s+/, " ")
+  str.gsub!(/[\/\:\\]/, "_")
+  str
+end
+
+Sites = [
+  # revver.com
+  proc do |html|
+    return unless html =~ /<a href=\"(http:\/\/media.revver.com\/qt;download\/\d+.mov)\">/
+    url = $1
+    html =~ /<title>Revver &raquo; (.*?)<\/title>/
+    title = $1
+    [url, title, "mov"]
+  end,
+  # video.google.com
+  proc do |html|
+    return unless html =~ /src=\"\/googleplayer\.swf\?\&videoUrl=([^\"]+)\"/
+    url = URI.decode($1)
+    html =~ /<title>(.*?)<\/title>/
+    title = $1
+    [url, title, "flv"]
+  end,
+  # youtube.com
+  proc do |html|
+    return unless html =~ /swfArgs = \{(.*?)\}/
+    args = $1
+    args.gsub!(/\',/, "&")
+    args.gsub!(/:\'/, "=")
+    args.gsub!(/\'$/, "")
+    url = "http://www.youtube.com/get_video?#{args}"
+    html =~ /<title>YouTube - (.*?)<\/title>/
+    title = $1
+    [url, title, "flv"]
+  end,
+  # embedded revver.com
+  proc do |html|
+    return unless html =~ /src=\"http:\/\/flash.revver.com\/player\/1.0\/player.swf\".*?flashvars=\".*?&mediaId=(.*?)&/
+    url = "http://one.revver.com/watch/" + $1
+    html =~ /<title>(.*?)<\/title>/
+    title = $1
+    [url, title, "flv"]
+  end,
+]
+
+def url_title_extn_from_html(html)
+  Sites.each do |site|
+    url, title, extn = site.call(html)
+    return url, title, extn if url
+  end
+  raise "Don't know how to download from that web site"
+end
+
+def main(pageurl)
+  url, title, extn = url_title_extn_from_html(download2str(pageurl))
+  file = File.join((ENV["DOWNSTREAM_DIR"] or raise), "#{filemask(title)}.#{extn}")
+  puts file
+  raise "File already exists" if File.exist?(file)
+  download2file(url, file)
+end
+
+main(*ARGV)
