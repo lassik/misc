@@ -1,0 +1,107 @@
+;;; TODO: should be able to return multiple values from x
+(defmacro non-nil (x)
+  `(or ,x (error "~S should be non-nil" ',x)))
+
+(defun checkequal (goal x)
+  (if (equal goal x) x (error "Wanted ~A but got ~A" goal x)))
+
+(defun vequal (a b)
+  (if (not (and (vectorp a) (vectorp b)))
+      (equal a b)
+      (and (= (length a) (length b))
+           (dotimes (i (length a) t)
+             (unless (vequal (elt a i) (elt b i))
+               (return nil))))))
+
+(defun equal/gensym (a b)
+  (if (and (symbolp a) (null (symbol-package a)))
+      (and (symbolp b) (null (symbol-package b)))
+      (if (or (atom a) (atom b))
+          (equal a b)
+          (and (equal/gensym (car a) (car b))
+               (equal/gensym (cdr a) (cdr b))))))
+
+(defun maptimes (fn times)
+  (let ((acc nil))
+    (dotimes (i times) (push (funcall fn i) acc))
+    (nreverse acc)))
+
+(defmacro with-seq-iterator ((name seq) &body body)
+  (with-gensyms (%seq %n)
+    `(let ((,%seq ,seq)
+           (,%n 0))
+       (macrolet ((,name ()
+                    (if (< ,%n (length ,%seq))
+                        (prog1 (elt ,%seq ,%n) (incf ,%n))
+                        nil)))
+         ,@body))))
+
+(defmacro destructuring-case (key &body cases)
+  (with-gensyms (%key)
+    `(let ((,%key ,key))
+       (if (atom ,%key)
+           (error "destructuring-case: atom as key: ~A" ,%key)
+           (case (car ,%key)
+             ,@(mapcar (lambda (case)
+                         (destructuring-bind ((case-select &rest case-destr)
+                                              &body case-body)
+                             case
+                           `(,case-select
+                             (destructuring-bind ,case-destr (cdr ,%key)
+                               ,@case-body))))
+                       cases))))))
+
+(defun histogram (list)
+  (let ((counts (make-hash-table :test #'equal)))
+    (dolist (elt list) (incf (gethash elt counts 0)))
+    (let (results)
+      (dolist (elt (sort (ht-keys counts)
+                         (lambda (a b)
+                           (if (and (numberp a) (numberp b))
+                               (< a b)
+                               (if (and (stringp a) (stringp b))
+                                   (string-lessp a b)
+                                   (random-boolean))))))
+        (pushback (cons elt (gethash elt counts))
+                  results))
+      results)))
+
+(defun qp-bytes (s)
+  (with-input-from-string (input s)
+    (let (bytes)
+      (labels ((byte (x) (push x bytes)))
+        (labels ((hexdigit () (parse-integer (string (read-char input)) :radix 16)))
+          (loop (let ((c (read-char input nil nil)))
+                  (case c
+                    ((nil) (return (coerce (nreverse bytes) '(vector (unsigned-byte 8)))))
+                    ((#\=) (byte (+ (* 16 (hexdigit)) (hexdigit))))
+                    (t     (byte (char-code c)))))))))))
+
+(defun decode-quoted-printable (enc s)
+  (convert-string-from-bytes (qp-bytes s) enc))
+
+(defun hexstr-to-bytes (s)
+  (assert (= 0 (mod (length s) 2)))
+  (let ((bytes (make-array (/ (length s) 2) :element-type '(unsigned-byte 8))))
+    (labels ((hexdigit (c) (parse-integer (string c) :radix 16)))
+      (dotimes (i (length bytes) bytes)
+        (setf (elt bytes i) (+ (* 16 (hexdigit (elt s (* 2 i)))) (hexdigit (elt s (1+ (* 2 i))))))))))
+
+(defun call-with-stream (fun obj &rest args)
+  (multiple-value-bind (opened stream)
+      (if (streamp obj) (values nil obj) (values t (apply #'open obj args)))
+    (unwind-protect (funcall fun stream) (when opened (close stream)))))
+
+(defmacro with-char-input (var &body body)
+  `(call-with-stream (lambda (,var) ,@body) ,var))
+
+(defmacro with-octet-input (var &body body)
+  `(call-with-stream (lambda (,var) ,@body) ,var :element-type '(unsigned-byte 8)))
+
+(defmacro with-char-output (var &body body)
+  `(call-with-stream (lambda (,var) ,@body) ,var :direction :output :if-exists :supersede))
+
+(defmacro with-octet-output (var &body body)
+  `(call-with-stream (lambda (,var) ,@body) ,var :direction :output :if-exists :supersede :element-type '(unsigned-byte 8)))
+
+(ext:without-package-lock (:common-lisp) (defsetf file-position file-position))
