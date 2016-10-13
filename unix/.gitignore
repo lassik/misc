@@ -1,1 +1,3 @@
+*.dSYM
 /get-exe-path-freebsd
+/signal-from-pid
