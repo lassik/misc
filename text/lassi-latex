@@ -1,0 +1,24 @@
+#! /usr/bin/env ruby
+
+class Shell
+  def Shell.quote(string)
+    string.gsub /[^A-Za-z0-9]/ do |x| "\\"+x end
+  end
+end
+
+if ARGV.length != 1
+  $stderr.puts "usage: #{File.basename(__FILE__)} tex-file-name"
+  exit 1
+end
+
+tex_file_name = ARGV[0]
+
+stub = if tex_file_name =~ /^(.*)\.tex$/
+         $1
+       else
+         $stderr.puts "not a tex file"
+         exit 1
+       end
+
+`sh -e #{File.dirname(__FILE__)}/lassi-latex-do.sh #{Shell.quote stub}`
+exit $?.exitstatus
