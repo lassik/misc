@@ -1,0 +1,12 @@
+Junkcode
+========
+
+This is my personal junkcode repository. It contains assorted bits of
+code that are not polished or useful enough to publish as full-blown
+projects, but that I save for my own use and for reference.
+
+If you want to re-use some of this code, feel free to email me and
+I'll send you a copy under any permissive license of your choice. I
+live in Europe so I can't just put things into the public domain :-(
+
+--- Lassi Kortela <lassi@lassi.io>
