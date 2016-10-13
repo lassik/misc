@@ -1,0 +1,115 @@
+application: fill static buffer, check for overflow at the end
+
+  size_t len;
+  char buf[100];
+  char *put;
+  put = buf;
+  put = strput(put, buf + sizeof(buf), a);
+  put = strput(put, buf + sizeof(buf), b);
+  if(!put) overflow(); else len = put - buf;
+
+
+application: fill dynamically allocated buffer
+
+  size_t len;
+  char *buf;
+  char *put;
+  char *lim;
+  put = buf = limalloc(&lim, strlen(a) + strlen(b) + 1);
+  put = strput(put, lim, a);
+  put = strput(put, lim, b);
+  len = put - buf;
+  return(buf);
+
+
+believing that overflow check is > rather than >=
+
+i have seen one person make this error.  moral: don't specify APIs
+that are prone to off-by-one errors in input or output processing.
+sane design assumption: programmers can't do basic arithmetic.
+
+correct:
+
+  if(strlcpy(buf, b, bufsize) >= bufsize) error();
+
+erroneous (overflow by one character will not be detected):
+
+  if(strlcpy(buf, b, bufsize) > bufsize) error();
+
+
+forgetting to change between copy and concatenate when resequencing
+statements
+
+correct (error can't happen using strput):
+
+  put = buf;
+  put = strput(put, buflim, a);
+  put = strput(put, buflim, b);
+
+correct:
+
+  strlcpy(buf, a, bufsize);
+  strlcat(buf, b, bufsize);
+
+erroneous (results in crash unless buf is zero-initialized):
+
+  strlcat(buf, b, bufsize);
+  strlcpy(buf, a, bufsize);
+
+
+forgetting to initialize pointer on stack
+
+  char *put;
+  put = strput(put, buflim, a);
+
+  gcc -Wall -O will warn about uninitialized use.
+  if the usage was strput(&put, buflim, src) then we couldn't check
+  for this error.
+
+
+forgetting to initialize pointer in global memory
+
+  static char *put;
+  put = strput(put, buflim, a);
+
+  put will be zero initialized by the linker, strput will do
+  nothing, buffer contents will be garbled unless it's also zero
+  initialized
+
+
+forgetting to update pointer
+
+  put = buf;
+  strput(put, buflim, a);
+  strput(put, buflim, b);
+
+  b will always overwrite a, so error always manifests unless a is
+  zero-length
+
+
+believing limit argument should indicate length, not size
+
+  char buf[100];
+  char *buflen = buf + sizeof(buf) - 1;
+  char *put;
+  put = strput(buf, buflen, a);
+  put = strput(buf, buflen, b);
+
+  amount of used buffer space will be one char less than there is
+  memory reserved for the buffer.  no crash even if limit argument is
+  less than or equal to buffer argument.
+
+
+believing the limit argument is a size argument
+
+  put = strput(put, bufsize, src);
+
+  compiler will warn about wrong data type
+
+
+believing the argument order is different
+
+  put = strput(put, src, bufsize);
+
+  may result in crash unless src is const, in which case compiler will
+  catch wrong data type
