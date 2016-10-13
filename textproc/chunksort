@@ -1,0 +1,25 @@
+#! /usr/bin/env ruby
+
+def whack(str)
+  str.downcase.gsub /[^a-z0-9]/, ""
+end
+
+chunks = []
+cur = ""
+while line = gets
+  if line =~ /^\s*$/
+    chunks.push(cur) if cur != ""
+    cur = ""
+  else
+    cur += line
+  end
+end
+chunks.push(cur) if cur != ""
+cur = ""
+
+chunks.sort! {|a,b| whack(a) <=> whack(b)}
+
+chunks.each do |chunk|
+  puts
+  puts chunk
+end
