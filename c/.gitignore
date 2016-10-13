@@ -1,3 +1,4 @@
 *.dSYM
+/strdupv-test
 /strput-bench
 /strput-test
