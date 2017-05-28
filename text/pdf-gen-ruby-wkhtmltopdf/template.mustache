@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+    <head>
+        <title>PDF testing</title>
+    </head>
+    <body>
+        <h1>The PDF Testing Company</h1>
+        <p>PDF testing for fun and profit</p>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Real Value</th>
+            </tr>
+            {{#rows}}
+                <tr>
+                    <td>{{name}}</td>
+                    <td>{{value}}</td>
+                    <td>
+                        {{#real_value}}{{real_value}}{{/real_value}}
+                        {{^real_value}}priceless{{/real_value}}
+                    </td>
+                </tr>
+            {{/rows}}
+        </table>
+    </body>
+</html>
