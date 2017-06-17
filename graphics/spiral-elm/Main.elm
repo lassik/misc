@@ -6,15 +6,16 @@
 
 module Main exposing (..)
 
-import Html exposing (Html)
+import Html exposing (Html, program)
 import List
 import String
 import Svg exposing (circle, svg)
 import Svg.Attributes exposing (..)
+import Time exposing (Time, second)
 
 
 candyFactor =
-    100
+    200
 
 
 rainbow t =
@@ -33,7 +34,7 @@ ySpiral a t =
     a * t * sin t
 
 
-nCircles i n ocx ocy =
+nCircles i n ocx ocy time =
     if i >= n then
         []
     else
@@ -50,13 +51,20 @@ nCircles i n ocx ocy =
             tcy =
                 ocy + ySpiral a t
         in
-        circle [ cx (toString tcx), cy (toString tcy), r "45", fill (rainbow (i / n)), stroke "black" ] []
-            :: nCircles (i + 1) n ocx ocy
+        circle
+            [ cx (toString tcx)
+            , cy (toString tcy)
+            , r "45"
+            , fill (rainbow (time + (i / n)))
+            , stroke "black"
+            ]
+            []
+            :: nCircles (i + 1) n ocx ocy time
 
 
-main =
+view time =
     svg [ viewBox "00 00 300 300", width "600px" ]
-        (nCircles 0 300 150 150)
+        (nCircles 0 300 150 150 (time / (35 * Time.second)))
 
 
 rgb r g b =
@@ -65,3 +73,32 @@ rgb r g b =
             List.map (floor >> toString) [ r, g, b ]
     in
     "rgb(" ++ String.join "," nums ++ ")"
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( 0, Cmd.none )
+
+
+type alias Model =
+    Time
+
+
+type Msg
+    = Tick Time
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Tick newTime ->
+            ( newTime, Cmd.none )
+
+
+subs : Model -> Sub Msg
+subs model =
+    Time.every (45 * Time.millisecond) Tick
+
+
+main =
+    program { init = init, view = view, update = update, subscriptions = subs }
