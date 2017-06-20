@@ -1,3 +1,4 @@
 *.dSYM
 /get-exe-path-freebsd
+/mvedit
 /signal-from-pid
