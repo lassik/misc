@@ -1,0 +1,110 @@
+#!/usr/bin/env perl
+sub print_usage {
+print <<ENDUSAGE;
+Usage: mvf {rule} - {filename}
+Rules:
+  -p str         prepend
+  -a str         append
+  -A str         append before extension
+  -i pos str     insert at pos, zero-based
+  -s what with   regexp replace
+  -r what        regexp remove
+  -u what        regexp uppercase
+  -l what        regexp lowercase
+ENDUSAGE
+}
+#-------------------------------------------------------------------------------
+# Rules
+#-------------------------------------------------------------------------------
+my @rules0, @rules1, @rules2;
+sub add_rule {
+  my $one, $two;
+  if (($_[1] >= 1 && !($one=shift(@ARGV)))
+  ||  ($_[1] >= 2 && !($two=shift(@ARGV)))) {
+    print "Rule syntax: $_[2]\n";
+    exit 1;
+  }
+  push(@rules0, $_[0]);
+  push(@rules1, $one);
+  push(@rules2, $two);
+}
+my $arg;
+if (!($arg=shift)) {
+  print_usage;
+  exit 1;
+}
+LOOP: {
+do {
+  if    ($arg eq '-p') { add_rule('p', 1, '-p str'      ); }
+  elsif ($arg eq '-a') { add_rule('a', 1, '-a str'      ); }
+  elsif ($arg eq '-A') { add_rule('A', 1, '-A str'      ); }
+  elsif ($arg eq '-i') { add_rule('i', 2, '-i pos str'  ); }
+  elsif ($arg eq '-s') { add_rule('s', 2, '-s what with'); }
+  elsif ($arg eq '-r') { add_rule('r', 1, '-r what'     ); }
+  elsif ($arg eq '-u') { add_rule('u', 0, '-u'          ); }
+  elsif ($arg eq '-l') { add_rule('l', 0, '-l'          ); }
+  elsif ($arg eq '-' ) {
+    if ($#rules0 < 0) {
+      print "No rules given.\n";
+      exit 1;
+    }
+    last;
+  }
+  else {
+    print "Invalid switch \"$arg\"; accepted: -[paAisrul]\n";
+    print "Possible reason: wrong num of args to last switch -$rules0[$#rules0]\n";
+    exit 1;
+  }
+} while ($arg=shift);
+}
+#-------------------------------------------------------------------------------
+# Do it
+#-------------------------------------------------------------------------------
+my $oldname, $filename, $rule, $one, $two, $pos;
+while ($oldname=shift) {
+  print "old: $oldname\n";
+  $filename=$oldname;
+  for (my $i=0; $i<=$#rules0; $i++) {
+    $rule = $rules0[$i];
+    $one  = $rules1[$i];
+    $two  = $rules2[$i];
+    if    ($rule eq 'p') {
+      $filename = $one . $filename;
+    }
+    elsif ($rule eq 'a') {
+      $filename = $filename . $one;
+    }
+    elsif ($rule eq 'A') {
+      if (($pos = rindex($filename, '.')) > 0) {
+        $filename = substr($filename, 0, $pos) . $one .
+         substr($filename, $pos, length($filename));
+      }
+      else { # this is a dotfile or otherwise extensionless; simply mimic -a
+        $filename = $filename . $one;
+      }
+    }
+    elsif ($rule eq 'i') {
+      if ($one < 0) { $one = length($filename) - (-$one); }
+      $filename = substr($filename, 0, $one) . $two .
+       substr($filename, $one, length($filename));
+    }
+    elsif ($rule eq 's') {
+      $filename =~ s/$one/$two/g;
+    }
+    elsif ($rule eq 'r') {
+      $filename =~ s/$one//g;
+    }
+    elsif ($rule eq 'u') {
+      $filename = uc($filename);
+    }
+    elsif ($rule eq 'l') {
+      $filename = lc($filename);
+    }
+    else {
+      print "invalid rule slipped past arg check: \"$rule\". aborting.";
+      exit 1;
+    }
+  }
+  print "new: $filename\n";
+  rename($oldname, $filename) || die "Can't rename \"$oldname\" to \"$filename\"";
+}
