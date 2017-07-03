@@ -37,10 +37,8 @@ done:
     firsterror = errno;
     if (handle && (closedir(handle) == -1) && !firsterror)
         firsterror = errno;
-    if (firsterror) {
-        errno = firsterror;
+    if ((errno = firsterror))
         diesys("cannot list directory");
-    }
 }
 
 extern int main(void)
