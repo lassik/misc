@@ -17,7 +17,7 @@ static void do_ent(const char *dirpath, const char *name)
     printf("%s/%s\n", dirpath, name);
 }
 
-extern void do_dir(const char *dirpath)
+static void do_dir(const char *dirpath)
 {
     DIR *handle;
     struct dirent *d;
@@ -43,7 +43,7 @@ done:
     }
 }
 
-int main(void)
+extern int main(void)
 {
     do_dir(".");
     return 0;
