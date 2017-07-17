@@ -1,4 +1,5 @@
 *.dSYM
+/dirsize
 /get-exe-path-freebsd
 /mvedit
 /print-exit-code
