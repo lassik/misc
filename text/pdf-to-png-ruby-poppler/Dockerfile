@@ -1,5 +1,5 @@
 FROM ruby:alpine
-RUN apk update && apk add poppler-utils
+RUN apk update && apk add poppler-utils ghostscript-fonts
 VOLUME /app
 COPY . /app
 WORKDIR /app
