@@ -1,0 +1,256 @@
+#main
+
+%snadj of %sn
+%snadj of %snadj
+%a %aux %way %pr
+%a %snsin %aux %way %pr
+Like %snart for %pl
+Like %snart is %pl
+Like %pl in %sn
+Like %pl %state
+There was %sn that did %pr
+There was %sn that %ipf
+There were %pl in %pl
+There was %sn_end
+There were %c in %pl
+%pr ... for %snthe %aux %pr %state
+And %snadj in %pl
+It was %snadj
+As if %pl could %pr
+As if %sn could %pr
+As if %sn could be %ipf2
+With my %snnart in %sn_end
+With our %snnart in our %pl
+With our %a %snnart in their %a %pl
+With their %snnart in our %pl
+
+
+
+#aux
+
+may
+can
+could
+might
+must
+to
+would
+shall
+
+
+
+#c
+
+a million
+a thousand
+a myriad
+millions
+thousands
+infinities
+myriads
+hordes
+
+
+
+#aart
+
+a %aa
+an %aan
+
+
+
+#a
+
+%aa
+%aan
+
+
+
+#aa
+
+blue
+purple
+dark
+blazing
+liquid
+pretentious
+scattered
+blank
+bleak
+striking
+memorial
+bleeding
+black
+functional
+nullified
+penultimate
+crud
+questionable
+bastard
+
+#aan
+
+eternal
+ethereal
+elephantine
+abstract
+infantile
+envious
+erroneous
+
+
+#snadj
+
+%snn
+%aart %sna
+%aart %snan
+
+
+
+#sn
+
+%snart
+
+#snart
+
+%snsin
+%snthe
+
+#snsin
+
+%snn
+a %sna
+an %snan
+
+#snthe
+
+%snn
+%snn
+the %sna
+the %sna
+the %snan
+
+#sn_end
+
+%snn
+the %sna
+the %snan
+a %sna
+an %snan
+
+#snnart
+
+%snn
+%snn
+%sna
+%sna
+%snan
+
+
+#snn
+
+flesh
+drag
+drift
+wood
+matter
+fury
+oblivion
+nuclear waste
+pi
+
+#sna
+
+maze
+kitten
+river
+night
+metaphor
+core dump
+monstrosity
+dangling pointer
+wastebasket
+paper clip
+shadow
+stack frame
+
+#snan
+
+infinity
+etymology
+enigma
+abstraction
+entity
+instruction set
+
+
+#pl
+
+elves
+woods
+thorns
+constellations
+days
+clouds
+buffer overflows
+fools
+service packs
+thoughts
+cereals
+tears
+functions
+
+
+#pr
+
+run
+do
+slice
+weep
+save
+feel
+pass on
+satisfy
+want
+stay
+remain
+become
+pop
+occur
+grok
+scream
+fail
+debug
+help
+know
+boot
+
+#ipf
+
+went
+did
+%ipf2
+
+#ipf2
+
+sucked
+felt
+assured
+embraced
+
+#state
+
+calm
+gone
+spent
+furious
+felt
+
+
+#way
+
+calmly
+wildly
+freely
+safely
+better
