@@ -1,7 +1,9 @@
 *.dSYM
+/complete_path_test
 /dirsize
 /emptydirs
 /get-exe-path-freebsd
+/libcomplete_path.so
 /mvedit
 /print-exit-code
 /readdir-usage
