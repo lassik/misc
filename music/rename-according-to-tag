@@ -112,4 +112,5 @@ if __name__ == '__main__':
         assert not os.path.exists(newname)
     for oldname, newname in renames:
         print('Renaming to', newname)
+        os.makedirs(os.path.dirname(newname), exist_ok=True)
         os.rename(oldname, newname)
