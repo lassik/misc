@@ -1,0 +1,111 @@
+#! /usr/bin/env python3
+
+import argparse
+import os
+import re
+import sys
+
+import mutagen
+
+
+LOWEST_HIGH_QUALITY_BITRATE = 256 * 1000
+DJ_GENRES = [
+    'breakcore',
+    'drumnbass',
+    'dubstep',
+    'hardcore',
+    'house',
+    'industrial',
+    'jcore',
+    'psytrance',
+    'techno',
+    'techno',
+    'trance',
+]
+
+DASH = ' - '
+
+
+def noweird(s):
+    s = re.sub(r'[^A-Za-z0-9 -]', '_', s)
+    s = re.sub(r'\s+', ' ', s)
+    s = s.replace(DASH, '-')
+    s = s[:100]
+    return s
+
+
+def prop(audio, propname, transform=None):
+    value = audio[propname][0] if propname in audio else ''
+    value = transform(value) if transform else value
+    value = noweird(value)
+    return value
+
+
+def derive_filename_from_tag(filename):
+    if filename.startswith('/'):
+        raise Exception('Filename is absolute')
+    audio = mutagen.File(filename, easy=True)
+    # print(audio.pprint())
+
+    # TODO: Fix incorrect filename extension using info from mutagen.
+    ext = os.path.splitext(filename)[1].lower()
+
+    composer = prop(audio, 'composer')
+    performer = prop(audio, 'albumartist') or prop(audio, 'artist')
+    year = prop(audio, 'date', lambda s: re.sub(r'-.*', '', s))
+    album = prop(audio, 'album')
+    tracknumber = prop(audio, 'tracknumber',
+                       lambda s: re.sub(r'/.*', '', s).zfill(2))
+    title = prop(audio, 'title')
+    genre = prop(audio, 'genre',
+                 lambda s: re.sub(r'[^a-z0-9]+', '', s.lower()) or 'other')
+
+    performer_year_suffix = ' ({} {})'.format(performer, year) \
+        if genre == 'classical' and composer != performer \
+        else ''
+
+    assert performer
+    assert title
+    if album:
+        assert year
+        assert tracknumber
+
+    if album and performer_year_suffix:
+        album_dir = ''.join([composer, DASH, album, performer_year_suffix])
+        basename = ''.join([tracknumber, DASH, title, ext])
+    elif performer_year_suffix:
+        album_dir = ''
+        basename = ''.join([composer, DASH, title, performer_year_suffix, ext])
+    elif album:
+        album_dir = ''.join([performer, DASH, year, DASH, album])
+        basename = ''.join([tracknumber, DASH, title, ext])
+    else:
+        album_dir = ''
+        basename = ''.join([performer, DASH, title, ext])
+
+    quality = 'hq' if audio.info.bitrate >= LOWEST_HIGH_QUALITY_BITRATE else 'lowq'
+    dj = 'dj' if genre in DJ_GENRES else ''
+    albums_or_tracks = 'albums' if album else 'tracks'
+    type_dir = '-'.join(filter(None, [quality, dj, albums_or_tracks]))
+
+    return os.sep.join(filter(None, [type_dir, genre, album_dir, basename]))
+
+
+if __name__ == '__main__':
+    apars = argparse.ArgumentParser()
+    apars.add_argument('filenames', nargs='+')
+    args = apars.parse_args()
+    renames = []
+    for oldname in args.filenames:
+        newname = derive_filename_from_tag(oldname)
+        if oldname != newname:
+            renames.append((oldname, newname))
+    for oldname, newname in renames:
+        print(newname)
+    if not (renames and input('Rename all? [yN]').strip().lower() == 'y'):
+        sys.exit()
+    for oldname, newname in renames:
+        assert not os.path.exists(newname)
+    for oldname, newname in renames:
+        print('Renaming to', newname)
+        os.rename(oldname, newname)
