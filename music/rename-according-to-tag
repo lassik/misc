@@ -42,10 +42,7 @@ def prop(audio, propname, transform=None):
 
 
 def derive_filename_from_tag(filename):
-    if filename.startswith('/'):
-        raise Exception('Filename is absolute')
     audio = mutagen.File(filename, easy=True)
-    # print(audio.pprint())
 
     # TODO: Fix incorrect filename extension using info from mutagen.
     ext = os.path.splitext(filename)[1].lower()
@@ -97,6 +94,8 @@ if __name__ == '__main__':
     args = apars.parse_args()
     renames = []
     for oldname in args.filenames:
+        if filename.startswith('/'):
+            raise Exception('Filename is absolute')
         newname = derive_filename_from_tag(oldname)
         if oldname != newname:
             renames.append((oldname, newname))
