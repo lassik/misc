@@ -27,8 +27,8 @@ DASH = ' - '
 
 
 def noweird(s):
-    s = re.sub(r'[^A-Za-z0-9 -]', '_', s)
     s = re.sub(r'\s+', ' ', s)
+    s = re.sub(r'[^A-Za-z0-9 -]', '_', s)
     s = s.replace(DASH, '-')
     s = s[:100]
     return s
@@ -61,7 +61,7 @@ def derive_filename_from_tag(filename):
                  lambda s: re.sub(r'[^a-z0-9]+', '', s.lower()) or 'other')
 
     performer_year_suffix = ' ({} {})'.format(performer, year) \
-        if genre == 'classical' and composer != performer \
+        if genre == 'classical' and composer and composer != performer \
         else ''
 
     assert performer
