@@ -94,7 +94,7 @@ if __name__ == '__main__':
     args = apars.parse_args()
     renames = []
     for oldname in args.filenames:
-        if filename.startswith('/'):
+        if oldname.startswith('/'):
             raise Exception('Filename is absolute')
         newname = derive_filename_from_tag(oldname)
         if oldname != newname:
