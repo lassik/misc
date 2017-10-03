@@ -47,15 +47,20 @@ def derive_filename_from_tag(filename):
     # TODO: Fix incorrect filename extension using info from mutagen.
     ext = os.path.splitext(filename)[1].lower()
 
+    album = prop(audio, 'album')
+    title = prop(audio, 'title')
     composer = prop(audio, 'composer')
     performer = prop(audio, 'albumartist') or prop(audio, 'artist')
-    year = prop(audio, 'date', lambda s: re.sub(r'-.*', '', s))
-    album = prop(audio, 'album')
-    tracknumber = prop(audio, 'tracknumber',
-                       lambda s: re.sub(r'/.*', '', s).zfill(2))
-    title = prop(audio, 'title')
-    genre = prop(audio, 'genre',
-                 lambda s: re.sub(r'[^a-z0-9]+', '', s.lower()) or 'other')
+
+    year = prop(
+        audio, 'date',
+        lambda s: re.sub(r'-.*', '', s))
+    tracknumber = prop(
+        audio, 'tracknumber',
+        lambda s: re.sub(r'/.*', '', s).zfill(2))
+    genre = prop(
+        audio, 'genre',
+        lambda s: re.sub(r'[^a-z0-9]+', '', s.lower()) or 'other')
 
     performer_year_suffix = ' ({} {})'.format(performer, year) \
         if genre == 'classical' and composer and composer != performer \
