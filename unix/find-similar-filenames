@@ -1,0 +1,29 @@
+#! /usr/bin/env python3
+
+from collections import defaultdict
+import os
+import re
+
+
+def fingerprint(filename):
+    whole, _ = os.path.splitext(filename)
+    whole = whole.strip().lower()
+    whole = re.sub(r'[^a-z]+', ' ', whole)
+    words = whole.split()
+    return tuple(sorted(set(words)))
+
+
+def gather():
+    finger_files = defaultdict(set)
+    for dir, subdirs, files in os.walk(os.curdir):
+        for file in files:
+            finger_files[fingerprint(file)].add(os.path.join(dir, file))
+    return {finger: fileset for finger, fileset in finger_files.items()
+            if len(fileset) > 1}
+
+
+if __name__ == "__main__":
+    for _, fileset in gather().items():
+        for file in sorted(fileset):
+            print(file)
+        print()
