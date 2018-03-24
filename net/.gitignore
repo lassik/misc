@@ -1,4 +1,5 @@
 /*.dSYM
 /libcurl-content-disposition
+/logmail
 /loopback-tcp-server
 /tcp-connections-darwin
