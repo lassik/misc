@@ -1,0 +1,95 @@
+#! /usr/bin/env python3
+
+import argparse
+import datetime
+import json
+import os
+import sys
+
+
+MEM = '.memtime'
+MEMNEW = MEM + '.new'
+
+
+def fetch_mem():
+    try:
+        return json.load(open(MEM))
+    except FileNotFoundError:
+        return {}
+
+
+def store_mem(mem):
+    if mem:
+        json.dump(mem, open(MEMNEW, 'w'))
+        os.rename(MEMNEW, MEM)
+    else:
+        try:
+            os.remove(MEM)
+        except FileNotFoundError:
+            pass
+
+
+def isoformat_timestamp(timestamp):
+    return datetime.datetime.fromtimestamp(int(timestamp)).isoformat()
+
+
+def fetch_file_timestamp(filename):
+    return int(os.lstat(filename).st_mtime)
+
+
+def store_file_timestamp(filename, timestamp):
+    os.utime(filename, times=(timestamp, timestamp))
+
+
+def cmd_memorize(filenames):
+    mem = fetch_mem()
+    for filename in filenames:
+        timestamp = fetch_file_timestamp(filename)
+        mem[filename] = timestamp
+    store_mem(mem)
+    cmd_list(filenames)
+
+
+def cmd_recall(filenames):
+    if not filenames:
+        return
+    mem = cmd_list(filenames)
+    for filename in filenames:
+        timestamp = mem[filename]
+        store_file_timestamp(filename, timestamp)
+    cmd_forget(filenames)
+
+
+def cmd_forget(filenames):
+    store_mem({filename: timestamp for filename, timestamp in fetch_mem(
+    ).items() if filenames and (filename not in filenames)})
+
+
+def cmd_list(filenames):
+    mem = fetch_mem()
+    if filenames:
+        for filename in filenames:
+            if filename not in mem:
+                raise ValueError('Cannot recall {}'.format(filename))
+    for filename, timestamp in sorted(mem.items()):
+        print(isoformat_timestamp(timestamp), '-', filename)
+    return mem
+
+
+COMMANDS = {'memorize': cmd_memorize,
+            'recall': cmd_recall,
+            'forget': cmd_forget,
+            'list': cmd_list}
+
+
+if __name__ == '__main__':
+    ap = argparse.ArgumentParser()
+    ap.add_argument('command', choices=list(COMMANDS.keys()))
+    ap.add_argument('filenames', nargs='*')
+    args = ap.parse_args()
+    assert not any('/' in filename for filename in args.filenames)
+    try:
+        COMMANDS[args.command](args.filenames)
+    except Exception as err:
+        print(err)
+        sys.exit(1)
