@@ -1,3 +1,30 @@
+/*
+ * These are two classic sorting algorithms, insertion sort and
+ * selection sort, augmented so that duplicate items are removed
+ * during the sort. This is much simpler than removing them in a
+ * separate pass.
+ *
+ * Selection sort is a natural fit for this task because at each
+ * iteration it finds the smallest remaining item. This means that
+ * duplicate items can simply be dropped and they will be overwritten
+ * by new items on later iterations. When we are done we can simply
+ * cut off the remainder of the array after the last non-duplicate
+ * item.
+ *
+ * With insertion sort we remove duplicate items by changing them into
+ * negative infinity (here -1) so that they all pile up at the
+ * beginning of the array once the sort is done. Then we cut off that
+ * part of the array. This is not as handy as cutting off the end of
+ * the array since it changes the base address of the resulting array.
+ *
+ * A further benefit of selection sort is that the sorted items can be
+ * consumed in order while the sort is running, since it always finds
+ * the smallest item.
+ *
+ * Both insertion sort and selection sort are O(n**2) but work great
+ * for small arrays and are among the simplest to implement.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
