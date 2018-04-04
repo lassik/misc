@@ -1,0 +1,5 @@
+*.png
+*.tga
+*.tga.gz
+*.tga.snappy
+/snappy-test
