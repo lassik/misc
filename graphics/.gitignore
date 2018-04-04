@@ -1,4 +1,6 @@
 *.dSYM
 /beos-color-palette-dump
+/doge.jpeg
+/doge.raw
 /rainbow.png
 /ttf2tga
