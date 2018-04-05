@@ -1,4 +1,5 @@
 *.dSYM
+/baton
 /complete_path_test
 /dirsize
 /emptydirs
