@@ -1,0 +1,50 @@
+#! /usr/bin/env ruby
+
+def imgfilename?(x)
+  x =~ /\.jpg$/i
+end
+
+def chg_ext(x,newext)
+  x[0..x.rindex('.')-1] + newext
+end
+
+imgs = []
+Dir.entries(".").sort.each do |name|
+  if imgfilename? name
+    imgs << name
+  end
+end
+
+if imgs.empty? then raise "No images in this directory." end
+
+0.upto(imgs.length-1) do |i|
+  imagname = imgs[i]
+  nextname = if i < imgs.length-1 then imgs[i+1] else imgs[0] end
+  nextname = chg_ext(nextname,".html")
+  htmlname = chg_ext(imagname,".html")
+  File.open(htmlname,"w") do |htmlfile|
+    htmlfile.puts <<-FIN
+      <html>
+        <head>
+          <title>#{imagname}</title>
+        </head>
+        <body bgcolor="black">
+          <a href="#{nextname}"><img src="#{imagname}"></a>
+        </body>
+      </html>
+    FIN
+  end
+end
+
+File.open("index.html","w") do |htmlfile|
+  htmlfile.puts <<-FIN
+    <html>
+      <head>
+        <title>index</title>
+      </head>
+      <body bgcolor="black">
+        <a href="#{chg_ext(imgs[0],".html")}">Start</a>
+      </body>
+    </html>
+  FIN
+end
