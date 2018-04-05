@@ -1,3 +1,4 @@
 *.dSYM
+/human-bytes
 /print-binary-tree
 /sort-uniq
