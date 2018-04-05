@@ -1,0 +1,4 @@
+#!/bin/sh -
+# Show all years commits have been made to branch (for making copyright messages)
+set -eu -o pipefail
+git log --date=short '--pretty=format:%ad' "$@" | cut -d - -f 1 | sort | uniq
