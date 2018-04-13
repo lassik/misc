@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #endif
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #define PBYTES(type) printf("%10s: %zu bytes\n", #type, sizeof(type))
@@ -20,6 +22,9 @@ static void stdint(void) {
   PBYTES(int);
   PBYTES(long);
   PBYTES(long long);
+  PBYTES(intmax_t);
+  PBYTES(ptrdiff_t);
+  PBYTES(intptr_t);
   PBYTES(size_t);
 }
 
