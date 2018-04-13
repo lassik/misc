@@ -1,4 +1,5 @@
 *.dSYM
+/sizeof
 /strdupv-test
 /strput-bench
 /strput-test
