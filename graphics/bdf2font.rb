@@ -1,6 +1,8 @@
+#! /usr/bin/env ruby
+
 Outw = 11
 Outh = 8
-Bytesperline = (Outw/8.0).ceil
+Bytesperline = (Outw / 8.0).ceil
 
 @table = [nil] * 128
 
@@ -17,7 +19,11 @@ end
 def emittext(bitmap)
   0.upto(Outh) do |y|
     0.upto(Outw) do |x|
-      STDOUT.write(if bitmap[Outw*y+x] == 1 then "#" else "." end)
+      STDOUT.write(if bitmap[Outw * y + x] == 1
+        "#"
+      else
+        "."
+      end)
     end
     STDOUT.puts
   end
@@ -25,13 +31,18 @@ def emittext(bitmap)
 end
 
 @timesemitted = 0
+
 def emit24bitmask(bitmap)
   return if @timesemitted > 0
   @timesemitted += 1
   STDOUT.binmode
   Outh.times do |y|
     Outw.times do |x|
-      byte = if bitmap[Outw*y + x] == 0 then 0 else 0xff end
+      byte = if bitmap[Outw * y + x] == 0
+               0
+             else
+               0xff
+             end
       STDOUT.putc(byte)
       STDOUT.putc(byte)
       STDOUT.putc(byte)
@@ -45,7 +56,9 @@ def emitbitmask(bitmap)
     Bytesperline.times do |byteidx|
       byte = 0
       8.times do |bitidx|
-        byte |= (bitmap[Outw*y + byteidx*8+bitidx] << bitidx) if byteidx*8+bitidx < Outw
+        if byteidx * 8 + bitidx < Outw
+          byte |= (bitmap[Outw * y + byteidx * 8 + bitidx] << bitidx)
+        end
       end
       binary += byte.chr
     end
@@ -60,7 +73,7 @@ def emit
     x = 0
     while row != 0
       if (row & 1) != 0
-        bitmap[Outw*y + (@w-x)] = 1  # + @xoff
+        bitmap[Outw * y + (@w - x)] = 1  # + @xoff
       end
       x += 1
       row >>= 1
@@ -91,7 +104,7 @@ reset
   else
     if @inbitmap
       raise "Bad bitmap line: #{line}" unless line =~ /^([0-9A-Fa-f]+)$/
-      @rows.push($1.to_i(16) >> ($1.length*4 - @w))
+      @rows.push($1.to_i(16) >> ($1.length * 4 - @w))
     end
   end
 end
