@@ -1,0 +1,37 @@
+#! /usr/bin/env python3
+
+# Edit a text file in $EDITOR. Afterwards, restore its modification
+# timestamp to match the timestamp before editing.
+
+import argparse
+import datetime
+import os
+import shlex
+import subprocess
+import sys
+
+
+def isoformat(timestamp):
+    return datetime.datetime.fromtimestamp(int(timestamp)).isoformat()
+
+
+def main(filename):
+    editor = os.getenv('EDITOR')
+    if not editor:
+        raise OSError('EDITOR not set')
+    time_before_edit = os.stat(filename).st_mtime
+    print('Time before edit: ' + isoformat(time_before_edit))
+    command = editor + ' ' + shlex.quote(filename)
+    subprocess.check_call(command, shell=True)
+    os.utime(filename, times=(time_before_edit, time_before_edit))
+
+
+if __name__ == '__main__':
+    ap = argparse.ArgumentParser()
+    ap.add_argument('filename')
+    args = ap.parse_args()
+    try:
+        main(args.filename)
+    except Exception as err:
+        print(err)
+        sys.exit(1)
