@@ -1,5 +1,4 @@
 /* tcsh-style pathname completion on unix. */
-/* Public domain. */
 
 
 

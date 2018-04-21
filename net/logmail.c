@@ -3,7 +3,7 @@
  * It is for those who don't use email otherwise but want programs on their own
  * machine to be able to mail reports to them. This program will simply dump all
  * mail 'sent' through it to a log file of your choosing; you'll be able to
- * inspect it from there when you care. This program is in the public domain.
+ * inspect it from there when you care.
  */
 
 #define LOGFILENAME "/tmp/sentmail"
