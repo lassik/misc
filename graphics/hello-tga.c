@@ -11,10 +11,11 @@ int main(void) {
 
   p = pixels;
   for (y = 0; y < height; y++) {
+    float intensity = (((float)y) / height);
     for (x = 0; x < width; x++) {
-      *p++ = 255 * ((float)y / height);
-      *p++ = 255 * ((float)x / width);
-      *p++ = 255 * ((float)y / height);
+      *p++ = 255 * intensity * ((float)y / height); // blue
+      *p++ = 255 * intensity * ((float)x / width);  // green
+      *p++ = 255 * intensity * ((float)y / height); // red
     }
   }
   tga[2] = 2;
@@ -22,8 +23,8 @@ int main(void) {
   tga[13] = 255 & (width >> 8);
   tga[14] = 255 & height;
   tga[15] = 255 & (height >> 8);
-  tga[16] = 24;
-  tga[17] = 32;
+  tga[16] = 24; // Number of bits in a stored pixel
+  tga[17] = 32; // Origin in upper left-hand corner (y=0 x=0 top left)
   return !((1 == fwrite(tga, sizeof(tga), 1, stdout)) &&
            (1 == fwrite(pixels, sizeof(pixels), 1, stdout)));
 }
