@@ -8,18 +8,10 @@
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
-
-static void die(const char *msg) {
-  fprintf(stderr, "%s\n", msg);
-  exit(1);
-}
 
 static void binary_stdout(void) {
 #ifdef _WIN32
-  if (_setmode(_fileno(stdout), _O_BINARY) == -1) {
-    die("cannot set stdout to binary mode");
-  }
+  _setmode(_fileno(stdout), _O_BINARY);
 #endif
 }
 
