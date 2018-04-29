@@ -2,3 +2,4 @@
 /win32errliststructs.h
 *.exe
 *.obj
+*.tds
