@@ -15,13 +15,13 @@ static void die(const char *msg) {
   exit(1);
 }
 
-#ifdef _WIN32
 static void binary_stdout(void) {
+#ifdef _WIN32
   if (_setmode(_fileno(stdout), _O_BINARY) == -1) {
     die("cannot set stdin to binary mode");
   }
-}
 #endif
+}
 
 int main(void) {
   binary_stdout();
