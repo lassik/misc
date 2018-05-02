@@ -6,8 +6,10 @@
 /get-exe-path-freebsd
 /libcomplete_path.so
 /mvedit
+/poll-stdin-unix
 /print-exit-code
 /readdir-usage
 /red-stderr
 /signal-from-pid
+/who-sent-signal
 /x-click-to-focus
