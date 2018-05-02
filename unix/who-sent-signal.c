@@ -5,8 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 
-void sigusr1(int signum, siginfo_t *si, void *data) {
-  (void)signum;
+void sigusr1(int signo, siginfo_t *si, void *data) {
+  (void)signo;
   (void)data;
   printf("Signal %d from pid %lu\n", (int)si->si_signo,
          (unsigned long)si->si_pid);
