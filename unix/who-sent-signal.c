@@ -16,8 +16,6 @@ void sigusr1(int signo, siginfo_t *si, void *data) {
 int main(void) {
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));
-  sigemptyset(&sa.sa_mask);
-  sigaddset(&sa.sa_mask, SIGUSR1);
   sa.sa_flags = SA_SIGINFO;
   sa.sa_sigaction = sigusr1;
   if (sigaction(SIGUSR1, &sa, 0) == -1) {
