@@ -20,9 +20,7 @@ func (_ hello) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	var listener net.Listener
-	var err error
-	listener, err = net.Listen("tcp", "127.0.0.1:0")
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	check(err)
 	log.Print("Serving on http://", listener.Addr())
 	check(http.Serve(listener, hello{}))
