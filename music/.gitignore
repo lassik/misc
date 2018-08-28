@@ -1,4 +1,5 @@
 *.dSYM
 /joinwav
 /macos-hello-midi
+/midi-note-table.html
 /sinewave.wav
