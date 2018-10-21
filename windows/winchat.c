@@ -33,10 +33,7 @@ dieSys(int errCode)
     wchar_t *errString = NULL;
     int size = FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, errCode,
-
-        0, (LPTSTR)&errString,
-
-        0, 0);
+        0, (LPTSTR)&errString, 0, 0);
     die(errString);
 }
 
