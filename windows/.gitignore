@@ -1,5 +1,6 @@
 /win32errlist.txt
 /win32errliststructs.h
+*.err
 *.exe
 *.obj
 *.tds
