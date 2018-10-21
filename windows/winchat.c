@@ -7,8 +7,8 @@
 #define UNICODE
 #include <windows.h>
 
-#define WM_SOCKET WM_USER + 1
-#define ID_TEXTBOX 1000
+#define WM_USER_SOCKET WM_USER + 1
+#define ID_EDITBOX 1000
 
 static const wchar_t windowClassName[] = L"myWindowClass";
 static WNDCLASSEX windowClass;
@@ -30,11 +30,11 @@ die(const wchar_t *msg)
 static void
 dieSys(int errCode)
 {
-    wchar_t *errString = NULL;
-    int size = FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, errCode,
-        0, (LPTSTR)&errString, 0, 0);
-    die(errString);
+    wchar_t *msg;
+
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        0, errCode, 0, (LPTSTR)&msg, 0, 0);
+    die(msg);
 }
 
 static void
@@ -77,7 +77,7 @@ onWindowCreate(void)
     editbox = CreateWindowEx(0, L"EDIT", 0,
         WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE |
             ES_AUTOVSCROLL,
-        0, 0, 0, 0, window, (HMENU)ID_TEXTBOX,
+        0, 0, 0, 0, window, (HMENU)ID_EDITBOX,
         (HINSTANCE)GetWindowLong(window, GWL_HINSTANCE), 0);
     if (!editbox) {
         die(L"Create editbox");
@@ -96,7 +96,7 @@ onWindowCreate(void)
         SOCKET_ERROR) {
         dieSys(WSAGetLastError());
     }
-    if (WSAAsyncSelect(sock, window, WM_SOCKET, FD_READ | FD_CLOSE) != 0) {
+    if (WSAAsyncSelect(sock, window, WM_USER_SOCKET, FD_READ | FD_CLOSE) != 0) {
         die(L"WSAAsyncSelect failed");
     }
 }
@@ -121,7 +121,7 @@ windowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
         onWindowSize();
         break;
-    case WM_SOCKET:
+    case WM_USER_SOCKET:
         onSocket(lParam);
         break;
     case WM_CLOSE:
