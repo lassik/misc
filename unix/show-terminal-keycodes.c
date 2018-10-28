@@ -1,8 +1,19 @@
 #include <sys/types.h>
 
+#include <ctype.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
+
+static void
+dumpstringbyte(int c)
+{
+    if (isprint(c)) {
+        printf("%c", c);
+    } else {
+        printf("\\x%02x", c);
+    }
+}
 
 static void
 dump(void)
@@ -15,7 +26,17 @@ dump(void)
         for (i = 0; i < n; i++) {
             printf("%02x ", bytes[i]);
         }
-        printf("}\r\n");
+        printf("} \"");
+        dumpstringbyte(bytes[0]);
+        printf("\"");
+        if (n > 1) {
+            printf(" \"");
+            for (i = 1; i < n; i++) {
+                dumpstringbyte(bytes[i]);
+            }
+            printf("\"");
+        }
+        printf("\r\n");
         if (bytes[0] == 'q') {
             break;
         }
