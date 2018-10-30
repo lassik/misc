@@ -1,0 +1,37 @@
+#! /usr/bin/env python3
+
+import argparse
+import os
+import sys
+
+
+def main(filenames):
+    dirnames = {}
+    for filename in filenames:
+        filedir = os.path.realpath(os.path.dirname(filename))
+        if filedir not in dirnames:
+            dirnames[filedir] = os.listdir(filedir)
+        stem, ext = os.path.splitext(filename)
+        newname = stem + ext.lower()
+        if filename != newname:
+            print("Renaming", filename, "->", newname)
+            # We can't just check for existence using
+            # os.path.lexists() because some file systems (Windows
+            # NTFS, Mac HFS) are case insensitive.
+            if newname in dirnames[filedir]:
+                raise OSError("File with new name already exists")
+            os.rename(filename, newname)
+
+
+if __name__ == "__main__":
+    try:
+        ap = argparse.ArgumentParser()
+        ap.add_argument("file", nargs="+")
+        args = ap.parse_args()
+        main(args.file)
+    except KeyboardInterrupt:
+        print()
+        sys.exit(1)
+    except Exception as err:
+        print(err, file=sys.stderr)
+        sys.exit(1)
