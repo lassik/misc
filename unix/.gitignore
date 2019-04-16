@@ -1,5 +1,6 @@
 *.dSYM
 /baton
+/chroot-preserves-fd
 /complete_path_test
 /dirsize
 /emptydirs
