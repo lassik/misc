@@ -2,6 +2,7 @@
 /baton
 /chroot-preserves-fd
 /complete_path_test
+/conceal-environ
 /dirsize
 /emptydirs
 /get-exe-path-freebsd
