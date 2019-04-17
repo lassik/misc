@@ -9,6 +9,7 @@
 /give-fd
 /libcomplete_path.so
 /mvedit
+/opencl-device-list
 /poll-stdin-unix
 /print-exit-code
 /readdir-usage
