@@ -5,6 +5,7 @@
 /dirsize
 /emptydirs
 /get-exe-path-freebsd
+/give-fd
 /libcomplete_path.so
 /mvedit
 /poll-stdin-unix
