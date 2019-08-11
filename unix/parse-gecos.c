@@ -1,3 +1,14 @@
+// MacOS             no ampersands, no commas
+// BeOS (Haiku)      no ampersands, no commas
+// Solaris (OmniOS)  no ampersands, no commas
+// Minix             no ampersands, no commas
+// Linux (Alpine)    no ampersands, uses commas
+// Linux (Debian)    no ampersands, uses commas
+// FreeBSD           uses ampersand, no commas
+// OpenBSD           uses ampersand, no commas
+// NetBSD            uses ampersand, no commas
+// DragonFly BSD     uses ampersand, no commas
+
 #include <sys/types.h>
 
 #include <ctype.h>
