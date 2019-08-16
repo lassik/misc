@@ -4,20 +4,20 @@
 (import (chezscheme))
 
 (define arch-pairs
-  '(("a6" . amd64)
+  '(("a6"    . amd64)
     ("arm32" . arm32)
-    ("i3" . i386)
+    ("i3"    . i386)
     ("ppc32" . ppc32)))
 
 (define os-pairs
-  '(("fb" . freebsd)
-    ("le" . linux)
-    ("nb" . netbsd)
-    ("nt" . windows)
-    ("ob" . openbsd)
+  '(("fb"  . freebsd)
+    ("le"  . linux)
+    ("nb"  . netbsd)
+    ("nt"  . windows)
+    ("ob"  . openbsd)
     ("osx" . macos)
     ("qnx" . qnx)
-    ("s2" . solaris)))
+    ("s2"  . solaris)))
 
 (define (string-prefix? fix s)
   (and (>= (string-length s) (string-length fix))
