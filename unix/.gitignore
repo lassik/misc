@@ -8,6 +8,7 @@
 /get-exe-path-freebsd
 /give-fd
 /libcomplete_path.so
+/macos-poll-bug
 /mvedit
 /opencl-device-list
 /parse-gecos
