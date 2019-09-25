@@ -5,9 +5,9 @@
   (newline))
 
 (define (bits lo hi word)
-  (bitwise-and (bitwise-arithmetic-shift-right word lo)
-               (- (bitwise-arithmetic-shift-left 1 (+ 1 (- hi lo)))
-                  1)))
+  (let ((count (+ 1 (- hi lo))))
+    (bitwise-and (bitwise-arithmetic-shift-right word lo)
+                 (- (bitwise-arithmetic-shift-left 1 count) 1))))
 
 (define (decode-dos-date word)
   (let ((d (bits 0 4 word))
