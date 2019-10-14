@@ -1,0 +1,185 @@
+# Survey of cfmakeraw() on different systems
+
+`cfmakeraw()` is a _termios_ function that switches Unix terminal
+settings into _raw mode_. In raw mode, every keystroke is received
+immediately by the application, including Control+C. Its opposite is
+_cooked mode_ where the terminal itself displays characters on the
+screen as they are typed, applications receive text one line at a
+time, and Control+C is a special key combination that sends an
+interrupt signal to the application).
+
+At the time of writing, `cfmakeraw()` is not POSIX-standardized. It is
+nonetheless widely supported.
+
+## Linux (GNU libc)
+
+https://github.com/bminor/glibc/blob/5cb226d7e4e710939cff7288bf9970cb52ec0dfa/termios/cfmakeraw.c
+
+[source,c]
+----
+t->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+t->c_oflag &= ~OPOST;
+t->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+t->c_cflag &= ~(CSIZE|PARENB);
+t->c_cflag |= CS8;
+t->c_cc[VMIN] = 1;  /* read returns when one char is available.  */
+t->c_cc[VTIME] = 0;
+----
+
+## Linux (musl libc)
+
+https://github.com/ifduyue/musl/blob/b4b1e10364c8737a632be61582e05a8d3acf5690/src/termios/cfmakeraw.c
+
+[source,c]
+----
+t->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+t->c_oflag &= ~OPOST;
+t->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+t->c_cflag &= ~(CSIZE|PARENB);
+t->c_cflag |= CS8;
+t->c_cc[VMIN] = 1;
+t->c_cc[VTIME] = 0;
+----
+
+## FreeBSD
+
+https://github.com/freebsd/freebsd/blob/726c74451f3a4fd9f97e0253f5929f3342bfd88d/lib/libc/gen/termios.c
+
+[source,c]
+----
+t->c_iflag &= ~(IMAXBEL|IXOFF|INPCK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON|IGNPAR);
+t->c_iflag |= IGNBRK;
+t->c_oflag &= ~OPOST;
+t->c_lflag &= ~(ECHO|ECHOE|ECHOK|ECHONL|ICANON|ISIG|IEXTEN|NOFLSH|TOSTOP|PENDIN);
+t->c_cflag &= ~(CSIZE|PARENB);
+t->c_cflag |= CS8|CREAD;
+t->c_cc[VMIN] = 1;
+t->c_cc[VTIME] = 0;
+----
+
+## DragonFly BSD
+
+[source,c]
+----
+t->c_iflag &= ~(IMAXBEL|IXOFF|INPCK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON|IGNPAR);
+t->c_iflag |= IGNBRK;
+t->c_oflag &= ~OPOST;
+t->c_lflag &= ~(ECHO|ECHOE|ECHOK|ECHONL|ICANON|ISIG|IEXTEN|NOFLSH|TOSTOP|PENDIN);
+t->c_cflag &= ~(CSIZE|PARENB);
+t->c_cflag |= CS8|CREAD;
+t->c_cc[VMIN] = 1;
+t->c_cc[VTIME] = 0;
+----
+
+## NetBSD
+
+https://github.com/NetBSD/src/blob/64b8a48e1288eb3902ed73113d157af50b2ec596/lib/libc/termios/cfmakeraw.c
+
+[source,c]
+----
+t->c_iflag &= ~(IMAXBEL|IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+t->c_oflag &= ~OPOST;
+t->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+t->c_cflag &= ~(CSIZE|PARENB);
+t->c_cflag |= CS8;
+/* XXX set MIN/TIME */
+----
+
+## OpenBSD
+
+https://github.com/openbsd/src/blob/b66614995ab119f75167daaa7755b34001836821/lib/libc/termios/cfmakeraw.c
+
+[source,c]
+----
+t->c_iflag &= ~(IMAXBEL|IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+t->c_oflag &= ~OPOST;
+t->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+t->c_cflag &= ~(CSIZE|PARENB);
+t->c_cflag |= CS8;
+t->c_cc[VMIN] = 1;
+t->c_cc[VTIME] = 0;
+----
+
+## Solaris
+
+This is patched into their version of the GNU GRUB bootloader (grub-legacy).
+
+https://github.com/kofemann/opensolaris/blob/80192cd83bf665e708269dae856f9145f7190f74/usr/src/grub/grub-0.97/grub/asmstub.c
+
+[source,c]
+----
+  /* Raw mode.  */
+#if defined(__sun)
+  termios.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+  termios.c_oflag &= ~OPOST;
+  termios.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+  termios.c_cflag &= ~(CSIZE|PARENB);
+  termios.c_cflag |= CS8;
+#else
+  cfmakeraw (&termios);
+#endif
+----
+
+## tmux
+
+https://github.com/NetBSD/src/blob/64b8a48e1288eb3902ed73113d157af50b2ec596/external/bsd/tmux/dist/compat/cfmakeraw.c
+
+[source,c]
+----
+tio->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+tio->c_oflag &= ~OPOST;
+tio->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+tio->c_cflag &= ~(CSIZE|PARENB);
+tio->c_cflag |= CS8;
+----
+
+## linenoise
+
+https://github.com/antirez/linenoise/blob/b12f6ba9cbcb311ba1aecccde692a4ab9faa4bc4/linenoise.c
+
+[source,c]
+----
+/* input modes: no break, no CR to NL, no parity check, no strip char,
+ * no start/stop output control. */
+raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+/* output modes - disable post processing */
+raw.c_oflag &= ~(OPOST);
+/* control modes - set 8 bit chars */
+raw.c_cflag |= (CS8);
+/* local modes - choing off, canonical off, no extended functions,
+ * no signal chars (^Z,^C) */
+raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+/* control chars - set return condition: min number of bytes and timer.
+ * We want read to return every single byte, without timeout. */
+raw.c_cc[VMIN] = 1; raw.c_cc[VTIME] = 0; /* 1 byte, no timer */
+----
+
+## Raw mode test program
+
+[source,c]
+----
+#include <sys/types.h>
+
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+
+static struct termios orig;
+static struct termios raw;
+static char buf[8];
+
+int main(void) {
+    printf("Each keypress is echoed as 'c'. Press 'q' to quit.\n");
+    tcgetattr(STDIN_FILENO, &orig);
+    cfmakeraw(&raw);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+    do {
+        read(STDIN_FILENO, buf, sizeof(buf));
+        printf("c");
+        fflush(stdout);
+    } while (buf[0] != 'q');
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
+    printf("\n");
+    return 0;
+}
+----
