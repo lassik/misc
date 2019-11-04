@@ -15,6 +15,7 @@
 /poll-stdin-unix
 /print-exit-code
 /readdir-usage
+/realdir
 /red-stderr
 /shm-test
 /show-terminal-keycodes
