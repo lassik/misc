@@ -5,6 +5,10 @@
 ;; * a dotted list          returns length; cdr of last pair
 ;; * a circular list        returns length before cycle; first pair of cycle
 ;;
+;; The precise meaning of "length" is "number of pairs". Since list
+;; elements are stored in the "car" of each pair, the number of pairs
+;; is equal to the number of elements.
+;;
 ;; <https://en.wikipedia.org/wiki/Cycle_detection#Floyd's_Tortoise_and_Hare>
 ;;
 (define (length-tail object)
