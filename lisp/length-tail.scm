@@ -24,6 +24,10 @@
              (if (eq? slow fast) (values len slow)
                  (find-cycle-start (+ len 1) (cdr slow) (cdr fast))))))))
 
+(define (proper-list? object)
+  (let-values (((_ tail) (length-tail object)))
+    (null? tail)))
+
 ;;
 
 (define (circular list)
