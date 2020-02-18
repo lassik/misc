@@ -28,6 +28,14 @@
   (let-values (((_ tail) (length-tail object)))
     (null? tail)))
 
+(define (circular-list? object)
+  (let-values (((_ tail) (length-tail object)))
+    (pair? tail)))
+
+(define (dotted-list? object)
+  (let-values (((len tail) (length-tail object)))
+    (not (or (= len 0) (null? tail) (pair? tail)))))
+
 ;;
 
 (define (circular list)
