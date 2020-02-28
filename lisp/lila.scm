@@ -1,12 +1,12 @@
 #!
 
-(define deb-enabled? #t)
+(define verbosity 2)
 
 (define-syntax deb
   (syntax-rules ()
     ((_ expr)
      (let ((val expr))
-       (when deb-enabled?
+       (when (>= verbosity 2)
          (let ((e (current-error-port)))
            (write 'expr e)
            (display " => " e)
@@ -365,18 +365,19 @@
 
 ;;
 
-(define (find-implementation-command langs impls scheme-path)
+(define (find-implementation-command langs impls goal-impl scheme-path)
   (any (lambda (impl)
-         (let ((flags (any (lambda (lang)
-                             (implementation-flags-for lang impl))
-                           langs)))
-           (and flags
-                (let ((cname (implementation-first-available-command-name
-                              impl)))
-                  (and cname (cons cname
-                                   (append (implementation-scheme-path-flags
-                                            impl scheme-path)
-                                           flags)))))))
+         (and (or (not goal-impl) (equal? impl goal-impl))
+              (let ((flags (any (lambda (lang)
+                                  (implementation-flags-for lang impl))
+                                langs)))
+                (and flags
+                     (let ((cname (implementation-first-available-command-name
+                                   impl)))
+                       (and cname (cons cname
+                                        (append (implementation-scheme-path-flags
+                                                 impl scheme-path)
+                                                flags))))))))
        impls))
 
 (define (read-version)
@@ -404,22 +405,26 @@
 (define (parse-command-line)
   (define (starts-with-dash? s)
     (and (> (string-length s) 0) (char=? #\- (string-ref s 0))))
-  (let* ((args (cdr (command-line)))
-         (opts (take-while starts-with-dash? args)))
-    (set! args (list-tail args (length opts)))
-    (let ((modes '()))
-      (for-each (lambda (opt)
-                  (cond ((equal? opt "-V") (set! modes (cons 'version modes)))
-                        ((equal? opt "-v") (set! modes (cons 'verbose modes)))
-                        (else (error "Unknown command line option" opt))))
-                opts)
-      (unless (<= (length modes) 1)
-        (error "More than one mode specified"))
-      (let ((mode (if (null? modes) #f (car modes))))
-        (values mode args)))))
+  (let loop ((args (cdr (command-line))) (config '((verbosity 0))))
+    (cond ((null? args) (error "No args"))
+          ((not (starts-with-dash? (car args)))
+           (values args config))
+          ((equal? "-V" (car args))
+           (loop (cdr args) (cons '(mode . version) config)))
+          ((equal? "-v" (car args))
+           (loop (cdr args)
+                 `((verbosity ,(+ 1 (or (assoc? 'verbosity config) 0)))
+                   ,@config)))
+          ((equal? "-i" (car args))
+           (let ((args (cdr args)))
+             (when (null? args)
+               (error "Expecting an argument for -i"))
+             (loop (cdr args)
+                   `((impl ,(string->symbol (car args)))
+                     ,@config))))
+          (else (error "Unknown command line option" opt)))))
 
-(define (run-script script-file script-args verbose?)
-  (set! deb-enabled? verbose?)
+(define (run-script script-file script-args goal-impl)
   (let* ((declarations (declare-file-body script-file))
          (langs (assoc+ 'language declarations))
          (impls (assoc+ 'implementations declarations))
@@ -427,10 +432,13 @@
     (deb langs)
     (deb impls)
     (deb scheme-path)
-    (let ((command (find-implementation-command langs impls scheme-path)))
+    (let ((command (find-implementation-command
+                    langs impls goal-impl scheme-path)))
       (when command
         (let ((command (append command (list script-file))))
-          (deb command)
+          (when (>= verbosity 1)
+            (write command (current-error-port))
+            (newline (current-error-port)))
           (let ((process
                  (open-process
                   (list path: (car command)
@@ -452,10 +460,12 @@
               (scheme.srfi 22))))
 
 (define (main)
-  (receive (mode args) (parse-command-line)
-    (cond ((equal? mode 'version)
-           (version))
-          (else
-           (run-script (car args) (cdr args) (equal? mode 'verbose))))))
+  (receive (args config) (parse-command-line)
+    (set! verbosity (assoc1 'verbosity config))
+    (case (assoc? 'mode config)
+      ((version)
+       (version))
+      (else
+       (run-script (car args) (cdr args) (assoc? 'impl config))))))
 
 (main)
