@@ -2,5 +2,6 @@
 *.exe
 *.obj
 *.tds
+/command-line-quote
 /win32errlist.txt
 /win32errliststructs.h
