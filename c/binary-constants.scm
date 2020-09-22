@@ -1,3 +1,6 @@
+;; Compensate for the lack of 0b1010 binary literals in the C language
+;; by defining equivalent BITS_1010 pre-processor constants.
+
 (let loop ((last-bits 2) (n 2))
   (when (<= n #b111111)
     (let* ((hex (number->string n 16))
