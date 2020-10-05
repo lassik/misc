@@ -125,8 +125,8 @@
     (string-append "UNISIG = \\\n"
                    (linify (append (hexify head "\\x" "" "")
                                    (ascify body "\\x" "" ""))
-                           "  b\"" "\" \\\n"
-                           "  b\"" "\" \\\n")
+                           "  \"" "\" \\\n"
+                           "  \"" "\" \\\n")
                    "  .force_encoding('binary')\n")))
 
 ;;
