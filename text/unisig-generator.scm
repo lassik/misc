@@ -1,5 +1,13 @@
 (import (scheme base) (scheme char))
 
+(define (bytevector->list bytes)
+  (let loop ((acc '()) (i 0))
+    (if (= i (bytevector-length bytes)) (reverse acc)
+        (loop (cons (bytevector-u8-ref bytes i) acc)
+              (+ i 1)))))
+
+;;
+
 (define (safe-ascii-char? char)
   (or (char<=? #\0 char #\9)
       (char<=? #\A char #\Z)
@@ -12,34 +20,36 @@
                  (string-downcase (number->string byte 16))
                  hex-suffix))
 
-(define (bytes->lines bytes between byte->string)
-  (define max-width 60)
-  (let loop ((i 0) (lines '()) (line ""))
+(define (strings->lines strings between)
+  (define max-line-length 60)
+  (let loop ((strings strings) (lines '()) (line ""))
     (let ((blank? (string=? "" line)))
-      (if (= i (bytevector-length bytes))
+      (if (null? strings)
           (reverse (if blank? lines (cons line lines)))
-          (let ((enc (byte->string (bytevector-u8-ref bytes i)))
-                (bet (if blank? "" between)))
-            (if (< max-width (+ (string-length line)
-                                (string-length bet)
-                                (string-length enc)))
-                (loop (+ i 1) (cons line lines) enc)
-                (loop (+ i 1) lines (string-append line bet enc))))))))
+          (let* ((string (car strings))
+                 (between (if blank? "" between))
+                 (extended-line (string-append line between string)))
+            (if (< max-line-length (string-length extended-line))
+                (loop (cdr strings) (cons line lines) string)
+                (loop (cdr strings) lines extended-line)))))))
 
 (define (hexify bytes hex-prefix hex-suffix between)
-  (bytes->lines bytes between
-                (lambda (byte) (hex-byte hex-prefix byte hex-suffix))))
+  (strings->lines (map (lambda (byte)
+                         (hex-byte hex-prefix byte hex-suffix))
+                       (bytevector->list bytes))
+                  between))
 
 (define (ascify bytes hex-prefix hex-suffix between)
-  (bytes->lines bytes between
-                (lambda (byte)
-                  (let ((char (integer->char byte)))
-                    (if (safe-ascii-char? char) (string char)
-                        (hex-byte hex-prefix byte hex-suffix))))))
+  (strings->lines (map (lambda (byte)
+                         (let ((char (integer->char byte)))
+                           (if (safe-ascii-char? char) (string char)
+                               (hex-byte hex-prefix byte hex-suffix))))
+                       (bytevector->list bytes))
+                  between))
 
-(define (linify lines
-                first-line-prefix non-last-line-suffix
-                non-first-line-prefix last-line-suffix)
+(define (pad-lines lines
+                   first-line-prefix non-last-line-suffix
+                   non-first-line-prefix last-line-suffix)
   (let loop ((first? #t) (lines lines) (prior ""))
     (let ((line (car lines)) (last? (null? (cdr lines))))
       (let ((prior (string-append
@@ -84,23 +94,23 @@
                    "   " (number->string (bytevector-length bytes)) "\n"
                    "   :element-type '(unsigned-byte 8)\n"
                    "   :initial-contents\n"
-                   (linify (hexify bytes "#x" "" " ")
-                           "   '(" "\n"
-                           "     " ")))\n"))))
+                   (pad-lines (hexify bytes "#x" "" " ")
+                              "   '(" "\n"
+                              "     " ")))\n"))))
 
 (define (scheme-r6rs sig align)
   (let ((bytes (unisig-bytes sig align)))
     (string-append "(define unisig\n"
-                   (linify (hexify bytes "#x" "" " ")
-                           "  #vu8(" "\n"
-                           "       " "))\n"))))
+                   (pad-lines (hexify bytes "#x" "" " ")
+                              "  #vu8(" "\n"
+                              "       " "))\n"))))
 
 (define (scheme-r7rs sig align)
   (let ((bytes (unisig-bytes sig align)))
     (string-append "(define unisig\n"
-                   (linify (hexify bytes "#x" "" " ")
-                           "  #u8(" "\n"
-                           "      " "))\n"))))
+                   (pad-lines (hexify bytes "#x" "" " ")
+                              "  #u8(" "\n"
+                              "      " "))\n"))))
 
 (define (cee sig align)
   (let-values (((head body) (unisig-head+body-bytes sig align)))
@@ -108,34 +118,34 @@
                    (number->string (+ (bytevector-length head)
                                       (bytevector-length body)))
                    "] =\n"
-                   (linify (append (hexify head "\\x" "" "")
-                                   (ascify body "\\x" "" ""))
-                           "    \"" "\"\n"
-                           "    \"" "\";\n"))))
+                   (pad-lines (append (hexify head "\\x" "" "")
+                                      (ascify body "\\x" "" ""))
+                              "    \"" "\"\n"
+                              "    \"" "\";\n"))))
 
 (define (go sig align)
   (let-values (((head body) (unisig-head+body-bytes sig align)))
     (string-append "const unisig =\n"
-                   (linify (append (hexify head "\\x" "" "")
-                                   (ascify body "\\x" "" ""))
-                           "\t\"" "\" +\n"
-                           "\t\"" "\"\n"))))
+                   (pad-lines (append (hexify head "\\x" "" "")
+                                      (ascify body "\\x" "" ""))
+                              "\t\"" "\" +\n"
+                              "\t\"" "\"\n"))))
 
 (define (python-3 sig align)
   (let-values (((head body) (unisig-head+body-bytes sig align)))
     (string-append "UNISIG = \\\n"
-                   (linify (append (hexify head "\\x" "" "")
-                                   (ascify body "\\x" "" ""))
-                           "    b\"" "\" \\\n"
-                           "    b\"" "\"\n"))))
+                   (pad-lines (append (hexify head "\\x" "" "")
+                                      (ascify body "\\x" "" ""))
+                              "    b\"" "\" \\\n"
+                              "    b\"" "\"\n"))))
 
 (define (ruby sig align)
   (let-values (((head body) (unisig-head+body-bytes sig align)))
     (string-append "UNISIG = \\\n"
-                   (linify (append (hexify head "\\x" "" "")
-                                   (ascify body "\\x" "" ""))
-                           "  \"" "\" \\\n"
-                           "  \"" "\" \\\n")
+                   (pad-lines (append (hexify head "\\x" "" "")
+                                      (ascify body "\\x" "" ""))
+                              "  \"" "\" \\\n"
+                              "  \"" "\" \\\n")
                    "  .force_encoding('binary')\n")))
 
 ;;
