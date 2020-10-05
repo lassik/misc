@@ -54,22 +54,32 @@
 
 (define unisig-magic (bytevector #xDC #xDC #x0D #x0A #x1A #x0A #x00))
 
-(define (unisig-bytes sig)
-  (let ((sig (string->utf8 sig)))
-    (bytevector-append unisig-magic
-                       (bytevector (bytevector-length sig))
-                       sig)))
+(define (pad-amount align length)
+  (modulo (- align (modulo length align)) align))
 
-(define (unisig-head+body-bytes sig)
-  (let ((sig (string->utf8 sig)))
-    (values (bytevector-append unisig-magic
-                               (bytevector (bytevector-length sig)))
-            sig)))
+(define (pad-bytes align head body)
+  (let ((head+body (+ (bytevector-length head) (bytevector-length body))))
+    (make-bytevector (pad-amount align head+body) 0)))
+
+(define (unisig-parts sig align)
+  (let* ((body (string->utf8 sig))
+         (head (bytevector-append unisig-magic
+                                  (bytevector (bytevector-length body))))
+         (pads (pad-bytes align head body)))
+    (values head body pads)))
+
+(define (unisig-bytes sig align)
+  (let-values (((head body pads) (unisig-parts sig align)))
+    (bytevector-append head body pads)))
+
+(define (unisig-head+body-bytes sig align)
+  (let-values (((head body pads) (unisig-parts sig align)))
+    (values head (bytevector-append body pads))))
 
 ;;
 
-(define (common-lisp sig)
-  (let ((bytes (unisig-bytes sig)))
+(define (common-lisp sig align)
+  (let ((bytes (unisig-bytes sig align)))
     (string-append "(defconstant +unisig+\n"
                    "  (make-array\n"
                    "   " (number->string (bytevector-length bytes)) "\n"
@@ -79,22 +89,22 @@
                            "   '(" "\n"
                            "     " ")))\n"))))
 
-(define (scheme-r6rs sig)
-  (let ((bytes (unisig-bytes sig)))
+(define (scheme-r6rs sig align)
+  (let ((bytes (unisig-bytes sig align)))
     (string-append "(define unisig\n"
                    (linify (hexify bytes "#x" "" " ")
                            "  #vu8(" "\n"
                            "       " "))\n"))))
 
-(define (scheme-r7rs sig)
-  (let ((bytes (unisig-bytes sig)))
+(define (scheme-r7rs sig align)
+  (let ((bytes (unisig-bytes sig align)))
     (string-append "(define unisig\n"
                    (linify (hexify bytes "#x" "" " ")
                            "  #u8(" "\n"
                            "      " "))\n"))))
 
-(define (cee sig)
-  (let-values (((head body) (unisig-head+body-bytes sig)))
+(define (cee sig align)
+  (let-values (((head body) (unisig-head+body-bytes sig align)))
     (string-append "static const unsigned char unisig["
                    (number->string (+ (bytevector-length head)
                                       (bytevector-length body)))
@@ -104,24 +114,24 @@
                            "    \"" "\"\n"
                            "    \"" "\";\n"))))
 
-(define (go sig)
-  (let-values (((head body) (unisig-head+body-bytes sig)))
+(define (go sig align)
+  (let-values (((head body) (unisig-head+body-bytes sig align)))
     (string-append "const unisig =\n"
                    (linify (append (hexify head "\\x" "" "")
                                    (ascify body "\\x" "" ""))
                            "\t\"" "\" +\n"
                            "\t\"" "\"\n"))))
 
-(define (python-3 sig)
-  (let-values (((head body) (unisig-head+body-bytes sig)))
+(define (python-3 sig align)
+  (let-values (((head body) (unisig-head+body-bytes sig align)))
     (string-append "UNISIG = \\\n"
                    (linify (append (hexify head "\\x" "" "")
                                    (ascify body "\\x" "" ""))
                            "    b\"" "\" \\\n"
                            "    b\"" "\"\n"))))
 
-(define (ruby sig)
-  (let-values (((head body) (unisig-head+body-bytes sig)))
+(define (ruby sig align)
+  (let-values (((head body) (unisig-head+body-bytes sig align)))
     (string-append "UNISIG = \\\n"
                    (linify (append (hexify head "\\x" "" "")
                                    (ascify body "\\x" "" ""))
@@ -132,9 +142,10 @@
 ;;
 
 (let ((them  (list common-lisp scheme-r6rs scheme-r7rs cee go python-3 ruby))
-      (sig "github.com/example/format#2020-04-01"))
+      (sig "github.com/example/format#2020-04-01")
+      (align 32))
   (set! sig (string-append sig sig))
   (let loop ((them them))
     (let* ((that (car them)) (them (cdr them)) (last? (null? them)))
-      (write-string (that sig))
+      (write-string (that sig align))
       (unless last? (newline) (loop them)))))
