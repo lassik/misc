@@ -1,11 +1,10 @@
 (import (scheme base) (scheme char))
 
-(define (safe-ascii-byte? byte)
-  (let ((char (integer->char byte)))
-    (or (char<=? #\0 char #\9)
-        (char<=? #\A char #\Z)
-        (char<=? #\a char #\z)
-        (case char ((#\. #\/ #\- #\#) #t) (else #f)))))
+(define (safe-ascii-char? char)
+  (or (char<=? #\0 char #\9)
+      (char<=? #\A char #\Z)
+      (char<=? #\a char #\z)
+      (case char ((#\. #\/ #\- #\#) #t) (else #f))))
 
 (define (hex-byte hex-prefix byte hex-suffix)
   (string-append hex-prefix
@@ -19,14 +18,13 @@
     (let ((blank? (string=? "" line)))
       (if (= i (bytevector-length bytes))
           (reverse (if blank? lines (cons line lines)))
-          (let ((enc (byte->string (bytevector-u8-ref bytes i))))
+          (let ((enc (byte->string (bytevector-u8-ref bytes i)))
+                (bet (if blank? "" between)))
             (if (< max-width (+ (string-length line)
-                                (if blank? 0 (string-length between))
+                                (string-length bet)
                                 (string-length enc)))
                 (loop (+ i 1) (cons line lines) enc)
-                (loop (+ i 1) lines (string-append line
-                                                   (if blank? "" between)
-                                                   enc))))))))
+                (loop (+ i 1) lines (string-append line bet enc))))))))
 
 (define (hexify bytes hex-prefix hex-suffix between)
   (bytes->lines bytes between
@@ -35,8 +33,9 @@
 (define (ascify bytes hex-prefix hex-suffix between)
   (bytes->lines bytes between
                 (lambda (byte)
-                  (if (safe-ascii-byte? byte) (string (integer->char byte))
-                      (hex-byte hex-prefix byte hex-suffix)))))
+                  (let ((char (integer->char byte)))
+                    (if (safe-ascii-char? char) (string char)
+                        (hex-byte hex-prefix byte hex-suffix))))))
 
 (define (linify lines
                 first-line-prefix non-last-line-suffix
