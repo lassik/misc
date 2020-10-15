@@ -76,7 +76,7 @@
                   `(list ,(cond ((eq? 't type) t-type)
                                 ((symbol? type) type)
                                 (else (error "Simple type expected" type))))))
-               (else (error "What type is this?" want-type))))
+               (else (error "What type is this?" type))))
        types))
 
 (define (match-types types want-types)
