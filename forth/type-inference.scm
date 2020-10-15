@@ -48,7 +48,7 @@
        (cadr type)))
 
 (define (match-simple-subtype type want-type t-type)
-  ;;(writeln `(match-simple-subtype ,type ,want-type))
+  ;;(writeln `(match-simple-subtype ,type ,want-type ,t-type))
   (assert (symbol? type))
   (assert (symbol? want-type))
   (cond ((eq? want-type type)
@@ -80,6 +80,7 @@
        types))
 
 (define (match-types types want-types)
+  ;;(writeln `(match-types ,types ,want-types))
   (assert (= (length types) (length want-types)))
   (let* ((t-type 't)
          (new-types
@@ -93,6 +94,9 @@
                           (set! t-type new-t-type)
                           new-type))
                        ((parse-list-type want-type)
+                        (unless (parse-list-type type)
+                          (error "Mismatch of list and non-list:"
+                                 want-type type))
                         (let-values (((new-elem-type new-t-type)
                                       (match-simple-subtype
                                        (parse-list-type type)
@@ -158,4 +162,6 @@
 (example '(1 2))
 (example '(1 2 +))
 (example '(1 2 + number->string "foo" string-append))
+(example '(1 append1))
 (example '("foo" append1))
+(example '(1 1 + append1  append))
