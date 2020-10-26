@@ -1,5 +1,6 @@
 *.dSYM
 /align_max
+/cpuid
 /sizeof
 /strdupv-test
 /strput-bench
