@@ -11,6 +11,7 @@
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -20,6 +21,13 @@ static const char color_red[] = ESCAPE("[31m");
 static const char color_reset[] = ESCAPE("[0m");
 
 static void
+panic_errno(const char *msg)
+{
+    fprintf(stderr, "%s: %s\n", msg, strerror(errno));
+    exit(111);
+}
+
+static void
 read_from_fd(int fd, const char *color)
 {
     static char buf[4096 * 1];
@@ -27,7 +35,7 @@ read_from_fd(int fd, const char *color)
 
     nr = read(fd, buf, sizeof(buf)); /* xxx: nonblock */
     if (nr == -1)
-        err(111, "read");
+        panic_errno("read");
     if (nr < 1)
         return;
     write(STDOUT_FILENO, color, strlen(color)); /* xxx: block */
@@ -52,7 +60,7 @@ handle_sigchld(int signo)
             } else if (errno == EINTR) {
                 /* nothing to do */
             } else {
-                err(111, "wait4");
+                panic_errno("wait4");
             }
         } else if (pid == 0) {
             /* nothing to do */
@@ -77,17 +85,17 @@ run(char **command)
     sigaction(SIGCHLD, &sa, 0);
     r = pipe(stdout_pipe);
     if (r == 1)
-        err(111, "pipe");
+        panic_errno("pipe");
     r = pipe(stderr_pipe);
     if (r == 1)
-        err(111, "pipe");
+        panic_errno("pipe");
     if ((fcntl(stdout_pipe[0], F_SETFD, FD_CLOEXEC) == -1) ||
         (fcntl(stderr_pipe[0], F_SETFD, FD_CLOEXEC) == -1)) {
-        err(111, "cannot set close-on-exec");
+        panic_errno("cannot set close-on-exec");
     }
     child = fork();
     if (child == -1)
-        err(111, "fork");
+        panic_errno("fork");
     if (child == 0) {
         dup2(stdout_pipe[1], STDOUT_FILENO);
         dup2(stderr_pipe[1], STDERR_FILENO);
@@ -109,7 +117,7 @@ run(char **command)
             if (errno == EINTR) {
                 continue;
             } else {
-                err(111, "poll");
+                panic_errno("poll");
             }
         } else {
 
@@ -129,11 +137,19 @@ run(char **command)
     }
 }
 
+static void
+usage(void)
+{
+    fprintf(stderr, "usage: red-stderr command [argument ...]\n");
+    exit(111);
+}
+
 int
 main(int argc, char **argv)
 {
-    if (argc < 2)
-        errx(100, "usage: red-stderr command");
+    if (argc < 2) {
+        usage();
+    }
     run(&argv[1]);
     return (0);
 }
