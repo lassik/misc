@@ -15,7 +15,8 @@ static struct {
     } u;
 } globals;
 
-int main(void)
+int
+main(void)
 {
     globals.i = 5;
     printf("%d\n", globals.i);

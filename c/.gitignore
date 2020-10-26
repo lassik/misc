@@ -1,5 +1,6 @@
 *.dSYM
 /align_max
+/anonymous-struct
 /cpuid
 /sizeof
 /strdupv-test
