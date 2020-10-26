@@ -60,7 +60,7 @@ handle_sigchld(int signo)
             } else if (errno == EINTR) {
                 // nothing to do
             } else {
-                panic_errno("wait4");
+                panic_errno("waitpid");
             }
         } else if (pid == 0) {
             // nothing to do
