@@ -33,12 +33,12 @@ read_from_fd(int fd, const char *color)
     static char buf[4096 * 1];
     ssize_t nr;
 
-    nr = read(fd, buf, sizeof(buf)); /* xxx: nonblock */
+    nr = read(fd, buf, sizeof(buf)); // TODO: nonblock
     if (nr == -1)
         panic_errno("read");
     if (nr < 1)
         return;
-    write(STDOUT_FILENO, color, strlen(color)); /* xxx: block */
+    write(STDOUT_FILENO, color, strlen(color)); // TODO: block
     write(STDOUT_FILENO, buf, (size_t)nr);
     write(STDOUT_FILENO, color_reset, strlen(color_reset));
 }
@@ -58,14 +58,14 @@ handle_sigchld(int signo)
             if (errno == ECHILD) {
                 break;
             } else if (errno == EINTR) {
-                /* nothing to do */
+                // nothing to do
             } else {
                 panic_errno("wait4");
             }
         } else if (pid == 0) {
-            /* nothing to do */
+            // nothing to do
         } else {
-            /* announce reaped */
+            // announce reaped
             child = 0;
         }
     }
