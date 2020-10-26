@@ -9,6 +9,7 @@
 #include <err.h>
 #include <errno.h>
 #include <string.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 
@@ -68,14 +69,22 @@ void run(char **command)
   if(r == 1) err(111, "pipe");
   r = pipe(stderr_pipe);
   if(r == 1) err(111, "pipe");
+  if ((fcntl(stdout_pipe[0], F_SETFD, FD_CLOEXEC) == -1)||
+      (fcntl(stderr_pipe[0], F_SETFD, FD_CLOEXEC) == -1)) {
+    err(111, "cannot set close-on-exec");
+  }
   child = fork();
   if(child == -1) err(111, "fork");
   if(child == 0) {
     dup2(stdout_pipe[1], STDOUT_FILENO);
     dup2(stderr_pipe[1], STDERR_FILENO);
+    close(stdout_pipe[1]);
+    close(stderr_pipe[1]);
     execvp(command[0], command);
     _exit(126);
   }
+  close(stdout_pipe[1]);
+  close(stderr_pipe[1]);
   memset(fds, 0, sizeof(fds));
   fds[0].fd = stdout_pipe[0];
   fds[0].events = POLLIN;
