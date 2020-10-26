@@ -41,7 +41,7 @@ void handle_sigchld()
     pid = wait4(-1, &status, WNOHANG, 0);
     if(pid == -1) {
       if(errno == ECHILD) {
-        /* nothing to do */
+        break;
       } else if(errno == EINTR) {
         /* nothing to do */
       } else {
