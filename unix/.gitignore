@@ -18,6 +18,7 @@
 /readdir-usage
 /realdir
 /red-stderr
+/red-stderr-test-2
 /shm-test
 /show-terminal-keycodes
 /signal-from-pid
