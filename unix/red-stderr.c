@@ -53,7 +53,7 @@ handle_sigchld(int signo)
 
     (void)signo;
     for (;;) {
-        pid = wait4(-1, &status, WNOHANG, 0);
+        pid = waitpid(0, &status, WNOHANG);
         if (pid == -1) {
             if (errno == ECHILD) {
                 break;
