@@ -4,21 +4,22 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <poll.h>
-#include <unistd.h>
+
 #include <err.h>
 #include <errno.h>
-#include <string.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-#define countof(x) (sizeof(x) / sizeof(*(x)))
+#define ESCAPE(s) "\x1b" s
 
-static const char color_red[]   = "\33[31m";
-static const char color_reset[] = "\33[0m";
+static const char color_red[]   = ESCAPE("[31m");
+static const char color_reset[] = ESCAPE("[0m");
 
-void read_from_fd(int fd, const char *color)
+static void read_from_fd(int fd, const char *color)
 {
   static char buf[4096 * 1];
   ssize_t nr;
@@ -33,11 +34,12 @@ void read_from_fd(int fd, const char *color)
 
 static volatile pid_t child = 0;
 
-void handle_sigchld()
+static void handle_sigchld(int signo)
 {
   pid_t pid;
   int status;
 
+  (void)signo;
   for(;;) {
     pid = wait4(-1, &status, WNOHANG, 0);
     if(pid == -1) {
@@ -57,14 +59,17 @@ void handle_sigchld()
   }
 }
 
-void run(char **command)
+static void run(char **command)
 {
+  struct sigaction sa;
   struct pollfd fds[2];
   int stdout_pipe[2];
   int stderr_pipe[2];
   int r;
 
-  signal(SIGCHLD, handle_sigchld);
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_handler = handle_sigchld;
+  sigaction(SIGCHLD, &sa, 0);
   r = pipe(stdout_pipe);
   if(r == 1) err(111, "pipe");
   r = pipe(stderr_pipe);
@@ -91,7 +96,7 @@ void run(char **command)
   fds[1].fd = stderr_pipe[0];
   fds[1].events = POLLIN;
   while(child > 0) {
-    r = poll(fds, countof(fds), -1);
+    r = poll(fds, sizeof(fds) / sizeof(fds[0]), -1);
     if(r == -1) {
       if(errno == EINTR) {
         continue;
