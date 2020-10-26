@@ -14,7 +14,7 @@
 
 #define countof(x) (sizeof(x) / sizeof(*(x)))
 
-static const char color_red[]   = "\33[35m";
+static const char color_red[]   = "\33[31m";
 static const char color_reset[] = "\33[0m";
 
 void read_from_fd(int fd, const char *color)
