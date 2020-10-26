@@ -58,16 +58,20 @@ monthNumber month =
 
 view model =
     let
-        hour =
+        y =
             String.fromInt (Time.toYear Time.utc model)
 
-        minute =
-            String.fromInt (monthNumber (Time.toMonth Time.utc model))
+        m =
+            String.pad 2
+                ' '
+                (String.fromInt
+                    (monthNumber (Time.toMonth Time.utc model))
+                )
 
-        second =
-            String.fromInt (Time.toDay Time.utc model)
+        d =
+            String.pad 2 ' ' (String.fromInt (Time.toDay Time.utc model))
     in
-    Html.text (hour ++ "-" ++ minute ++ "-" ++ second)
+    Html.text (y ++ "-" ++ m ++ "-" ++ d)
 
 
 update msg model =
