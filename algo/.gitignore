@@ -1,4 +1,5 @@
 *.dSYM
 /human-bytes
 /print-binary-tree
+/queens
 /sort-uniq
