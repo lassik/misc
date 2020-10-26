@@ -1,4 +1,5 @@
 *.dSYM
+/align_max
 /sizeof
 /strdupv-test
 /strput-bench
