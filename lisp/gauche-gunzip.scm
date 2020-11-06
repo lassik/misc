@@ -1,9 +1,9 @@
 (import (scheme base) (scheme file) (gauche base) (rfc zlib))
 
 (define (open-gzip-input-port filename)
-  (define autodetect-gzip (+ 15 32))
+  (define (auto-detect-gzip window-bits) (+ 32 window-bits))
   (open-inflating-port (open-binary-input-file filename)
-                       :window-bits autodetect-gzip))
+                       :window-bits (auto-detect-gzip 15)))
 
 (let* ((gz-filename "emacs-22.1.tar.gz")
        (decompressed-filename (string-append gz-filename ".decompressed")))
