@@ -2,12 +2,11 @@
 
 (define (writeln x) (write x) (newline))
 
+(define (map-cars f xs) (map (lambda (x) (cons (f (car x)) (cdr x))) xs))
+
 (define (run-length-encoding s)
   (let loop ((i 0) (pairs '()))
-    (if (= i (string-length s))
-        (reverse (map (lambda (pair) (cons (string (car pair))
-                                           (cdr pair)))
-                      pairs))
+    (if (= i (string-length s)) (reverse pairs)
         (let* ((last-pair  (and (not (null? pairs)) (car pairs)))
                (last-char  (and last-pair (car last-pair)))
                (last-count (and last-pair (cdr last-pair)))
@@ -19,5 +18,4 @@
                 (cons this-pair (if this-same? (cdr pairs) pairs)))))))
 
 (writeln '(("a" . 4) ("b" . 3) ("c" . 2) ("a" . 1)))
-(writeln (run-length-encoding "aaaabbbcca"))
-
+(writeln (map-cars string (run-length-encoding "aaaabbbcca")))
