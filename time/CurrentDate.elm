@@ -58,18 +58,17 @@ monthNumber month =
 
 view model =
     let
+        twoDigitString i =
+            String.pad 2 '0' (String.fromInt i)
+
         y =
             String.fromInt (Time.toYear Time.utc model)
 
         m =
-            String.pad 2
-                ' '
-                (String.fromInt
-                    (monthNumber (Time.toMonth Time.utc model))
-                )
+            twoDigitString (monthNumber (Time.toMonth Time.utc model))
 
         d =
-            String.pad 2 ' ' (String.fromInt (Time.toDay Time.utc model))
+            twoDigitString (Time.toDay Time.utc model)
     in
     Html.text (y ++ "-" ++ m ++ "-" ++ d)
 
