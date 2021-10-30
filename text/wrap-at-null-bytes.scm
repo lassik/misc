@@ -23,9 +23,14 @@
         column
         (loop (+ i 1)
               (+ column
-                 (if (char=? #\tab (string-ref str i))
-                     (- tab-width (modulo column tab-width))
-                     1))))))
+                 (let ((char (string-ref str i)))
+                   (cond ((char=? #\tab char)
+                          (- tab-width (modulo column tab-width)))
+                         ((or (< (char->integer char) #x20)
+                              (= (char->integer char) #x7f))
+                          0)
+                         (else
+                          1))))))))
 
 (define (render str)
   (define (horz-whitespace? char)
