@@ -34,10 +34,17 @@
     (let loop-lines ((line-start 0))
       (if (>= line-start str-end)
           (values)
-          (let ((line-end
-                 (let ((e (string-index str #\newline line-start str-end)))
-                   (if e (+ e 1) str-end))))
-            (let loop-chunks ((chunk-start line-start) (column 0))
+          (let* ((line-end
+                  (let ((e (string-index str #\newline line-start str-end)))
+                    (if e (+ e 1) str-end)))
+                 (left-margin
+                  (advance-column
+                   0 str
+                   line-start
+                   (or (string-index-not str horz-whitespace?
+                                         line-start line-end)
+                       line-start))))
+            (let loop-chunks ((chunk-start line-start) (column left-margin))
               (if (>= chunk-start line-end)
                   (loop-lines line-end)
                   (let ((chunk-end (or (string-index str (integer->char 0)
@@ -53,14 +60,15 @@
                                  (loop-chunks (+ chunk-end 1)
                                               column-after-chunk)))
                             (else
-                             (let ((left-margin 0)  ; TODO
-                                   (chunk-start
+                             (let ((chunk-start
                                     (or (string-index-not str
                                                           horz-whitespace?
                                                           chunk-start
                                                           chunk-end)
                                         chunk-end)))
                                (newline)
+                               (write-string
+                                (make-string left-margin #\space))
                                (write-string
                                 (string-copy str chunk-start chunk-end))
                                (loop-chunks
@@ -78,7 +86,7 @@
   " when\x0; the\x0; last\x0; operand\x0; does\x0; not\x0; name\x0; an\x0;"
   " already\x0; existing\x0; directory."
   "\n\n"
-  "In\x0; its\x0; second\x0; form,\x0; mv\x0; moves\x0; each\x0; file\x0;"
+  "\tIn\x0; its\x0; second\x0; form,\x0; mv\x0; moves\x0; each\x0; file\x0;"
   " named\x0; by\x0; a\x0; source\x0; operand\x0; to\x0; a destination\x0;"
   " file\x0; in\x0; the\x0; existing\x0; directory\x0; named\x0; by\x0;"
   " the\x0; directory\x0; operand. The\x0; destination\x0; path\x0; for\x0;"
