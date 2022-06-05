@@ -48,8 +48,11 @@ main(int argc, char **argv)
     if ((null_fd = open(null_file, O_RDWR)) == -1) {
         fatal_errno_string("cannot open", null_file);
     }
-    if (dup2(null_fd, STDERR_FILENO) == -1) {
-        fatal_errno("cannot re-open stderr");
+    if (null_fd != STDERR_FILENO) {
+        if (dup2(null_fd, STDERR_FILENO) == -1) {
+            fatal_errno("cannot re-open stderr");
+        }
+        close(null_fd);
     }
     execvp(argv[1], &argv[1]);
     fatal_errno_string("cannot run", argv[1]);
