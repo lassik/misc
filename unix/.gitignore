@@ -11,6 +11,7 @@
 /macos-poll-bug
 /max-fd-number
 /mvedit
+/noerr
 /opencl-device-list
 /parse-gecos
 /poll-stdin-unix
