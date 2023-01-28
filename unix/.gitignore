@@ -1,4 +1,5 @@
 *.dSYM
+/argv0
 /baton
 /chroot-preserves-fd
 /complete_path_test
