@@ -24,6 +24,7 @@
 /shm-test
 /show-terminal-keycodes
 /signal-from-pid
+/strerror-locale
 /who-sent-signal
 /x-click-to-focus
 /x11-shm-test
