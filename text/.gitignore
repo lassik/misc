@@ -1,5 +1,7 @@
 *.csv
+*.dSYM
 *.html
 *.pyc
 *.txt
 mamewatch.txt
+non-ascii
