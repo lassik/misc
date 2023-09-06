@@ -34,7 +34,7 @@
 
 (define (dotted-list? object)
   (let-values (((len tail) (length-tail object)))
-    (not (or (= len 0) (null? tail) (pair? tail)))))
+    (not (or (null? tail) (pair? tail)))))
 
 ;;
 
