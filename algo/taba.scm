@@ -1,0 +1,32 @@
+(import (scheme base)
+        (scheme write)
+        (only (srfi 1) iota))
+
+(define (writeln x) (write x) (newline))
+
+;; Not TABA
+(define (convolve as bs)
+  (if (or (null? as)
+          (null? bs))
+      '()
+      (cons (cons (car as)
+                  (car bs))
+            (convolve (cdr as)
+                      (cdr bs)))))
+
+;; TABA (there and back again)
+(define (convolve-reverse xs)
+  (letrec ((rec (lambda (tail)
+                  (if (null? tail)
+                      (values '() xs)
+                      (let-values (((acc rtail) (rec (cdr tail))))
+                        (values (cons (cons (car tail) (car rtail))
+                                      acc)
+                                (cdr rtail)))))))
+    (let-values (((acc rtail) (rec xs)))
+      (unless (null? rtail) (error "Can't"))
+      acc)))
+
+(for-each writeln (convolve (iota 10) (reverse (iota 10))))
+(newline)
+(for-each writeln (convolve-reverse (iota 10)))
